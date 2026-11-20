@@ -1,5 +1,7 @@
 # Medicub — spoken script for the stage show
 
+> Hinglish version (show + live demo + Q&A): [SCRIPT-HINGLISH.md](SCRIPT-HINGLISH.md)
+
 Problem Statement 4: **One Patient, One Medication Record — Building Safer, Connected Care.**
 
 How to run it: `npm run dev`, open `http://localhost:5173/show`, press **F** for full screen.
