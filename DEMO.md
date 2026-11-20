@@ -1,5 +1,7 @@
 # Medicub — stage demo plan
 
+> What to say: [SCRIPT.md](SCRIPT.md) (English) · [SCRIPT-HINGLISH.md](SCRIPT-HINGLISH.md) (Hinglish)
+
 About 8 minutes of live demo, plus questions. Everything runs on **https://medicub.vercel.app** with synthetic data.
 
 ---
