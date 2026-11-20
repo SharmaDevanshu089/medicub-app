@@ -30,11 +30,12 @@ const SPREAD = { lap: { x: 1010, y: 330, s: 0.6, m: 'home' as const }, phone: { 
 const HUB = { x: 1375, y: 560 }
 
 const STEPS: Step[] = [
-  { id: 'intro', center: true, kicker: 'Medicub', title: 'One medication record.\nDoctor → patient → pharmacy.', sub: 'Decision support, not a decision.', ...ROW },
-  { id: 'problem', kicker: 'The problem', title: 'Three places.\nThree lists.\nNobody sees all of it.', sub: 'Duplicates slip through, missed doses go unnoticed, brand swaps leave no record.', ...SPREAD },
-  { id: 'hub', kicker: 'The idea', title: 'One shared record.', sub: 'Every app reads and writes the same record. Every action is audited.', ...SPREAD },
+  { id: 'intro', center: true, kicker: 'CATALYST · Problem Statement 4', title: 'One patient.\nOne medication record.', sub: 'Medicub: safer, connected care from doctor to patient to pharmacy.', ...ROW },
+  { id: 'problem', kicker: 'The problem', title: 'Many clinicians.\nOne patient.\nNo single list.', sub: 'Records go fragmented and out of date: duplicate therapy, dosing errors, interactions, confusion.', ...SPREAD },
+  { id: 'hub', kicker: 'Our answer', title: 'One shared medication record.', sub: 'Doctors, patient and pharmacy read and write the same list: brand and generic, strength, dose, timing.', ...SPREAD },
+  { id: 'scenario', kicker: 'The defining scenario', title: 'Two specialists.\nOne hidden duplicate.', sub: 'Ramesh, 62, has diabetes and hypertension. A new prescription repeats amlodipine under another brand name.', lap: { x: 1250, ...OFF, m: 'home' }, phone: { x: 1500, ...OFF, m: 'lock' }, tab: { x: 1200, ...OFF, m: 'counter' } },
   { id: 'share', kicker: '1 · Consent', title: 'The patient shares by scanning the desk QR.', sub: 'No data moves. The scan grants time-limited access he can stop any time.', lap: { x: 1060, y: 540, s: 0.88, m: 'qr' }, phone: { x: 1640, y: 560, s: 1.05, m: 'scan' }, tab: { x: 1200, ...OFF, m: 'counter' } },
-  { id: 'flag', kicker: '2 · Doctor', title: "Risky prescriptions can't be signed until a doctor decides.", sub: 'Fixed rules flag and explain. A named doctor records the decision and the reason.', lap: { x: 1250, y: 545, s: 1.18, m: 'flag' }, phone: { x: 1700, ...OFF, m: 'scan' }, tab: { x: 1200, ...OFF, m: 'counter' } },
+  { id: 'flag', kicker: '2 · Doctor', title: "Risky prescriptions can't be signed until a doctor decides.", sub: 'Ranked by severity, explained, and the prescriber is asked: is this combination intentional?', lap: { x: 1250, y: 545, s: 1.18, m: 'flag' }, phone: { x: 1700, ...OFF, m: 'scan' }, tab: { x: 1200, ...OFF, m: 'counter' } },
   { id: 'adherence', kicker: '3 · Context', title: 'Is it the medicine, or the missed doses?', sub: '14 days of doses beside the wearable BP estimate. Context, not a diagnosis.', lap: { x: 1250, y: 545, s: 1.18, m: 'adherence' }, phone: { x: 1700, ...OFF, m: 'reminder' }, tab: { x: 1200, ...OFF, m: 'counter' } },
   { id: 'reminder', kicker: '4 · Patient', title: 'Reminders on the phone and the watch.', sub: 'Plain words, always: "Ask your doctor or pharmacist before your next dose."', lap: { x: 1250, ...OFF, m: 'adherence' }, phone: { x: 1240, y: 560, s: 1.3, m: 'reminder' }, tab: { x: 1200, ...OFF, m: 'counter' } },
   { id: 'ladder', kicker: '5 · Caregivers', title: 'Nobody misses a dose silently.', sub: 'Family see doses only, never records. The patient can pause anyone.', lap: { x: 1250, ...OFF, m: 'inbox' }, phone: { x: 1640, y: 560, s: 1.1, m: 'caregiver' }, tab: { x: 1200, ...OFF, m: 'counter' } },
@@ -42,6 +43,7 @@ const STEPS: Step[] = [
   { id: 'generic', kicker: '7 · Savings', title: 'Same medicine, a third of the price.', sub: 'Jan Aushadhi generic, offered only with the patient\'s agreement. Demo prices.', lap: { x: 1650, ...OFF, m: 'inbox' }, phone: { x: 1640, ...OFF, m: 'strip' }, tab: { x: 1230, y: 560, s: 1.3, m: 'generic' } },
   { id: 'strip', kicker: '8 · Patient check', title: 'Is this the right strip?', sub: 'A photo, read on the phone, compared with his medicine list.', lap: { x: 1650, ...OFF, m: 'home' }, phone: { x: 1240, y: 560, s: 1.3, m: 'strip' }, tab: { x: 1200, ...OFF, m: 'generic' } },
   { id: 'audit', kicker: '9 · Trust', title: 'Every action, in a tamper-evident chain.', sub: 'SHA-256 hash chain. Change one entry and the chain breaks.', lap: { x: 1250, ...OFF, m: 'home' }, phone: { x: 1500, ...OFF, m: 'strip' }, tab: { x: 1200, ...OFF, m: 'counter' } },
+  { id: 'fit', kicker: 'Problem Statement 4', title: 'Every requirement, covered.', sub: 'All seven asks, all three innovation levers, and the safety guardrail.', lap: { x: 1250, ...OFF, m: 'home' }, phone: { x: 1500, ...OFF, m: 'lock' }, tab: { x: 1200, ...OFF, m: 'counter' } },
   { id: 'roadmap', kicker: "What's next", title: 'Built today.\nNext, with funding.', sub: 'Honest about what is simulated in this prototype.', lap: { x: 1250, ...OFF, m: 'home' }, phone: { x: 1500, ...OFF, m: 'lock' }, tab: { x: 1200, ...OFF, m: 'counter' } },
   { id: 'end', center: true, kicker: 'Thank you', title: 'Medicub', sub: 'Try it live · medicub.vercel.app', ...ROW },
 ]
@@ -78,6 +80,18 @@ const PLAY: Record<string, (tl: gsap.core.Timeline, el: El) => void> = {
       .from(K('hub'), { scale: 0, duration: 0.8, ease: 'back.out(2)' }, 0.8)
       .from(K('hub-ring'), { scale: 0.6, autoAlpha: 0.9, duration: 1.6, repeat: -1, ease: 'power1.out' }, 1.4)
     tl.to(K('packet'), { strokeDashoffset: -60, duration: 1.4, repeat: -1, ease: 'none' }, 1.5)
+  },
+  scenario: (tl) => {
+    tl.from(K('rx-card'), { y: 50, autoAlpha: 0, stagger: 0.2, duration: 0.8, ease: 'expo.out' }, 0.4)
+      .from(K('dup-mark'), { backgroundColor: 'rgba(204,55,98,0)', color: '#1f2015', stagger: 0.25, duration: 0.5 }, 1.6)
+      .from(K('dup-link'), { scaleX: 0, transformOrigin: 'left center', duration: 0.6, ease: 'power2.inOut' }, 2.1)
+      .from(K('dup-badge'), { scale: 0, rotate: -10, duration: 0.6, ease: 'back.out(2.2)' }, 2.6)
+      .from(K('dup-quote'), { y: 20, autoAlpha: 0, duration: 0.6 }, 3.4)
+  },
+  fit: (tl) => {
+    tl.from(K('fit-col'), { y: 40, autoAlpha: 0, stagger: 0.15, duration: 0.7, ease: 'expo.out' }, 0.3)
+      .from(K('fit-row'), { x: -18, autoAlpha: 0, stagger: 0.07, duration: 0.4 }, 0.6)
+      .from(K('fit-tick'), { scale: 0, stagger: 0.07, duration: 0.35, ease: 'back.out(3)' }, 0.7)
   },
   share: (tl) => {
     tl.fromTo(K('scanline'), { y: 0 }, { y: 180, duration: 0.7, yoyo: true, repeat: 2, ease: 'sine.inOut' }, 0.6)
@@ -279,6 +293,8 @@ export default function Show() {
         {step.id === 'reminder' && <Watch />}
         {step.id === 'ladder' && <Ladder />}
         {step.id === 'pharmacy' && <div data-k="beam" className="absolute top-0 left-0 -mt-4 -ml-4 size-8 rounded-full bg-brand-600 shadow-[0_0_30px_10px_rgba(204,55,98,0.45)]" />}
+        {step.id === 'scenario' && <Scenario />}
+        {step.id === 'fit' && <Fit />}
         {step.id === 'audit' && <Chain />}
         {step.id === 'roadmap' && <Roadmap />}
 
@@ -807,6 +823,68 @@ function Roadmap() {
       <div data-k="rm-col" className="flex flex-col gap-3 rounded-[28px] bg-sage-700 p-7 text-white">
         <b className="text-[26px]">Needs funding or partners</b>
         {need.map(([t, w]) => <span key={t} data-k="rm-item" className="flex flex-col text-[20px] leading-snug"><b className="font-semibold">{t}</b><span className="text-[16px] text-sage-100">{w}</span></span>)}
+      </div>
+    </div>
+  )
+}
+
+function Scenario() {
+  const mark = (t: string) => <span data-k="dup-mark" className="rounded-md bg-brand-600 px-1.5 text-white">{t}</span>
+  return (
+    <div className="absolute" style={{ left: 760, top: 190, width: 1060 }}>
+      <div className="relative grid grid-cols-2 gap-16">
+        <div data-k="rx-card" className={`flex flex-col gap-4 rounded-[28px] bg-white p-7 ${SHADOW}`}>
+          <span className="text-[18px] font-extrabold tracking-[0.15em] text-subtle uppercase">What he takes now</span>
+          <div className="flex flex-col gap-1 rounded-2xl bg-cream-50 p-4"><b className="text-[28px]">Amlong 5</b><span className="text-[21px] text-muted">{mark('amlodipine')} 5 mg · once daily</span><span className="text-[17px] text-subtle">Dr Meera Iyer · Cardiology</span></div>
+          <div className="flex flex-col gap-1 rounded-2xl bg-cream-50 p-4"><b className="text-[28px]">Glycomet 500</b><span className="text-[21px] text-muted">metformin 500 mg · twice daily</span><span className="text-[17px] text-subtle">Dr Arjun Rao · Diabetology</span></div>
+        </div>
+        <div data-k="rx-card" className={`flex flex-col gap-4 rounded-[28px] border-[3px] border-brand-600 bg-white p-7 ${SHADOW}`}>
+          <span className="text-[18px] font-extrabold tracking-[0.15em] text-brand-600 uppercase">New prescription</span>
+          <div className="flex flex-col gap-1 rounded-2xl bg-brand-50 p-4"><b className="text-[28px]">Telma-AM 40/5</b><span className="text-[21px] text-muted">telmisartan 40 mg + {mark('amlodipine')} 5 mg</span><span className="text-[17px] text-subtle">Different brand name, same active ingredient</span></div>
+          <div data-k="dup-badge" className="flex items-center gap-3 self-start rounded-2xl bg-brand-600 px-5 py-3 text-white"><span className="text-[30px] font-black">2×</span><span className="text-[19px] leading-tight font-bold">amlodipine<br />5 mg + 5 mg</span></div>
+        </div>
+        <span data-k="dup-link" className="absolute top-[170px] left-[calc(50%-64px)] h-[6px] w-[128px] rounded-full bg-brand-600" />
+      </div>
+      <p data-k="dup-quote" className="m-0 mt-10 text-center text-[30px] font-semibold text-muted italic">“I can’t remember which prescription changed last.” · Ramesh</p>
+    </div>
+  )
+}
+function Fit() {
+  const asks = [
+    ['Unified medication record', 'Brand + generic, strength, dose, timing, prescriber'],
+    ['Duplicate-ingredient detection', 'Same ingredient under another brand is flagged'],
+    ['Interaction and safety checks', 'Fixed rules for interactions and unsafe swaps'],
+    ['Smart schedule', 'Phone + watch reminders, missed doses logged'],
+    ['Prescription reconciliation', 'New Rx checked against the current list before signing'],
+    ['Shared clinical access', 'Doctor, pharmacy, departments; decisions recorded'],
+    ['Patient-friendly design', 'Plain language, caregiver ladder, large controls'],
+  ]
+  const levers = [
+    ['Easy capture', 'Photo of a strip, checked against his list'],
+    ['Explainable, ranked flags', 'Severity + reason, and the prescriber is asked if it is intentional'],
+    ['Verification loop + audit trail', 'Open until a named professional decides; SHA-256 chain'],
+  ]
+  const Row = ({ t, d, n }: { t: string; d: string; n: string }) => (
+    <div data-k="fit-row" className="flex items-start gap-3">
+      <span data-k="fit-tick" className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-sage-700 text-white"><Check size={18} /></span>
+      <div className="flex flex-col"><b className="text-[21px] leading-tight"><span className="text-subtle">{n} </span>{t}</b><span className="text-[17px] text-muted">{d}</span></div>
+    </div>
+  )
+  return (
+    <div className="absolute grid grid-cols-[1.15fr_1fr] gap-7" style={{ left: 740, top: 120, width: 1100 }}>
+      <div data-k="fit-col" className="flex flex-col gap-3.5 rounded-[28px] bg-white p-7">
+        <b className="text-[18px] font-extrabold tracking-[0.15em] text-subtle uppercase">The 7 asks</b>
+        {asks.map(([t, d], n) => <Row key={t} t={t!} d={d!} n={`${n + 1}.`} />)}
+      </div>
+      <div className="flex flex-col gap-7">
+        <div data-k="fit-col" className="flex flex-col gap-3.5 rounded-[28px] bg-white p-7">
+          <b className="text-[18px] font-extrabold tracking-[0.15em] text-subtle uppercase">Innovation levers</b>
+          {levers.map(([t, d]) => <Row key={t} t={t!} d={d!} n="★" />)}
+        </div>
+        <div data-k="fit-col" className="flex flex-col gap-2 rounded-[28px] bg-sage-700 p-7 text-white">
+          <b className="text-[18px] font-extrabold tracking-[0.15em] text-sage-100 uppercase">Safety guardrail</b>
+          <span className="text-[22px] leading-snug font-semibold">Never stops, substitutes or alters a medicine. Every flag goes to a professional, and intentional combinations are kept apart from errors.</span>
+        </div>
       </div>
     </div>
   )

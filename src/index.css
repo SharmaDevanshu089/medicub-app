@@ -33,7 +33,7 @@
   --color-subtle: #6b6c5a;
   --color-line: #d6cdb8;
   --color-divider: #f0e8d6;
-  --font-app: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-app: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', system-ui, sans-serif;
 
   --animate-enter: enter 0.35s ease-out both;
   --animate-ring: ring 1.4s ease-out infinite;
