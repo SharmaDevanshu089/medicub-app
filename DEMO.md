@@ -21,6 +21,7 @@ About 8 minutes of live demo, plus questions. Everything runs on **https://medic
 | Laptop, tab 4 | `/caregiver` | Demo: **Sunita** (daughter) |
 | Laptop, tab 5 | `/logs` | Demo admin |
 | Demo phone | Medicub Android app | Ramesh Kumar |
+| Opening / backup | `/show`: an animated 14-step walkthrough. **Enter** = next, **Backspace** = back, **F** = full screen. Works offline once loaded | — |
 | Backup | `/demo` shows doctor + phone + watch side by side, if the phone fails | — |
 
 Tip: open all the tabs and sign in **before** you walk on stage. Mirror the phone to the projector (Vysor or scrcpy), or hold it up to a document camera.
