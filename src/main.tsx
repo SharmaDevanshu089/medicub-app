@@ -13,6 +13,7 @@ import Onboard from './screens/Onboard'
 import Patient from './screens/Patient'
 import Pharmacy from './screens/Pharmacy'
 import Present from './screens/Present'
+import Show from './screens/Show'
 import Watch from './screens/Watch'
 import { initClient, type AppName } from './store/store'
 import { ErrorBoundary, installGlobalErrorHandlers, Toaster } from './ui/AppFrame'
@@ -32,6 +33,7 @@ const ROUTES: Record<string, [Page, AppName | null]> = {
   '/qr': [ClinicQr, 'doctor'],
   '/caregiver': [Caregiver, 'caregiver'],
   '/demo': [Demo, null],
+  '/show': [Show, null],
 }
 // The Android build ships only the patient app (VITE_APP=patient).
 const forced = import.meta.env.VITE_APP as string | undefined

@@ -3,6 +3,7 @@ import { Card, Footer } from '../ui/kit'
 const LINKS = [
   ['/doctor', 'Doctor', 'Web app — sign in, Patient 360, composer, flag inbox'],
   ['/pharmacy', 'Pharmacy', 'Web app — inventory, redeem, scan & attest, offline mode'],
+  ['/show', 'Stage show', 'Animated walkthrough for the pitch: Enter next, Backspace back'],
   ['/caregiver', 'Caregiver', 'Family & ASHA worker — missed-dose alerts, confirm or call'],
   ['/patient', 'Patient phone', 'Mobile app in a 390×844 frame — geofence, records, reminders'],
   ['/watch', 'Patient watch', 'Round 396×396 watch face'],
