@@ -183,7 +183,7 @@ function Location({ s }: { s: State }) {
   )
 }
 
-const LINKS: [string, string, IconName][] = [['Doctor', '/doctor', 'user'], ['Patient phone', '/patient', 'sun'], ['Watch', '/watch', 'clock'], ['Pharmacy', '/pharmacy', 'store'], ['Department', '/department', 'flask'], ['Clinic QR', '/qr', 'qr'], ['Logs', '/logs', 'doc'], ['Side-by-side', '/demo', 'doc'], ['Ops console', '/console', 'shield']]
+const LINKS: [string, string, IconName][] = [['Doctor', '/doctor', 'user'], ['Patient phone', '/patient', 'sun'], ['Watch', '/watch', 'clock'], ['Pharmacy', '/pharmacy', 'store'], ['Caregiver', '/caregiver', 'heart'], ['Department', '/department', 'flask'], ['Clinic QR', '/qr', 'qr'], ['Logs', '/logs', 'doc'], ['Side-by-side', '/demo', 'doc'], ['Ops console', '/console', 'shield']]
 
 function Launch() {
   const [qr, setQr] = useState('')

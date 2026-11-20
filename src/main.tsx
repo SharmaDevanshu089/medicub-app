@@ -5,6 +5,7 @@ import Console from './screens/Console'
 import Demo from './screens/Demo'
 import Department from './screens/Department'
 import Doctor from './screens/Doctor'
+import Caregiver from './screens/Caregiver'
 import ClinicQr from './screens/ClinicQr'
 import Launcher from './screens/Launcher'
 import Logs from './screens/Logs'
@@ -29,6 +30,7 @@ const ROUTES: Record<string, [Page, AppName | null]> = {
   '/present': [Present, 'admin'],
   '/logs': [Logs, 'admin'],
   '/qr': [ClinicQr, 'doctor'],
+  '/caregiver': [Caregiver, 'caregiver'],
   '/demo': [Demo, null],
 }
 // The Android build ships only the patient app (VITE_APP=patient).

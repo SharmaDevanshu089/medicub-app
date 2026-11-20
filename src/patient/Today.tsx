@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { LADDER } from '../engine/care'
 import { speak } from '../lib/device'
 import { statusText } from '../lib/status'
 import { dayKey, fmtCountdown, fmtTime, slotOf, type DoseStatus } from '../lib/time'
@@ -10,7 +11,7 @@ import { hhmm12, patientView, type DoseRow } from './view'
 
 type View = ReturnType<typeof patientView>
 
-export function Today({ s, t, v, onTapTag }: { s: State; t: number; v: View; onTapTag: () => void }) {
+export function Today({ s, t, v, onTapTag, onCheck }: { s: State; t: number; v: View; onTapTag: () => void; onCheck: () => void }) {
   const root = useRef<HTMLDivElement>(null)
   useStaggerIn(root, 'today') // first paint only; cards that appear later animate themselves
   const first = v.me?.name.split(' ')[0] ?? ''
@@ -39,7 +40,9 @@ export function Today({ s, t, v, onTapTag }: { s: State; t: number; v: View; onT
 
       {v.tagDoctor && <ClinicCard s={s} t={t} v={v} onTapTag={onTapTag} />}
 
-      {v.due[0] ? <DueCard key={v.due[0].r.id} row={v.due[0]} t={t} more={v.due.length - 1} /> : <CaughtUp v={v} t={t} />}
+      {v.due[0] ? <DueCard key={v.due[0].r.id} row={v.due[0]} t={t} more={v.due.length - 1} family={v.me?.caregivers?.find((c) => c.enabled && c.relation === 'family')?.name} /> : <CaughtUp v={v} t={t} />}
+
+      <Pressable onClick={onCheck} className="flex h-[52px] items-center justify-center gap-2 rounded-2xl border-[1.5px] border-line bg-white text-base font-bold"><I n="camera" size={22} /> Check a medicine strip</Pressable>
 
       <DayList rows={v.rows} />
     </div>
@@ -105,7 +108,7 @@ function ClinicCard({ s, t, v, onTapTag }: { s: State; t: number; v: View; onTap
   )
 }
 
-function DueCard({ row, t, more }: { row: DoseRow; t: number; more: number }) {
+function DueCard({ row, t, more, family }: { row: DoseRow; t: number; more: number; family?: string }) {
   const card = useRef<HTMLElement>(null)
   const badge = useRef<HTMLSpanElement>(null)
   const burst = useRef<HTMLSpanElement>(null)
@@ -154,6 +157,7 @@ function DueCard({ row, t, more }: { row: DoseRow; t: number; more: number }) {
         <Pressable onClick={() => act('snoozed')} className="h-[50px] rounded-[14px] border-[1.5px] border-line bg-white text-base font-semibold">Remind in 10 min</Pressable>
         <Pressable onClick={() => act('skipped')} className="h-[50px] rounded-[14px] border-[1.5px] border-line bg-white text-base font-semibold text-muted">Skip this dose</Pressable>
       </div>
+      {family && <span className="text-center text-sm text-subtle">Not marked in {LADDER.familyAfterMin} min? We'll let {family.split(' ')[0]} know.</span>}
     </section>
   )
 }

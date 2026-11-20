@@ -3,6 +3,7 @@
 // and enforces the safety rules (no auto-close, HIGH/CRITICAL block signing, verified doctors only).
 import { CATALOG } from '../engine/catalog'
 import { blocksSigning, checkSubstitution, normalise, runChecks, type Finding, type MedInput } from '../engine/rules'
+import { cheaperEquivalents, matchStripText } from '../engine/care'
 import { insideFence } from '../lib/geo'
 import { buildSummary } from '../lib/summary'
 import { PHARMACIST, PHARMACY, seed } from '../store/seed'
@@ -258,6 +259,55 @@ export const ACTIONS: Record<string, ActionDef> = {
       return one({ ...s, announcements: (s.announcements ?? []).map((x) => (x.id === id ? { ...x, seenBy: [...x.seenBy, pid] } : x)) }, { actor: actorName(s, c.session), action: 'NOTIFICATION_SEEN', detail: `Read “${a.title}”`, subject: pid })
     },
   },
+  'patient.setCaregiverAlerts': {
+    roles: ['patient'],
+    run: (s, p, c) => {
+      const pid = me(c, 'patient').patientId
+      const id = str(p, 'caregiverId', { max: 40 })
+      const enabled = p.enabled === true
+      const cg = patientOf(s, pid).caregivers?.find((x) => x.id === id) ?? (() => { throw notFound('Caregiver') })()
+      return one(
+        { ...s, patients: s.patients.map((x) => (x.id === pid ? { ...x, caregivers: x.caregivers?.map((y) => (y.id === id ? { ...y, enabled } : y)) } : x)) },
+        { actor: actorName(s, c.session), action: enabled ? 'CAREGIVER_ALERTS_ON' : 'CAREGIVER_ALERTS_PAUSED', detail: `${cg.name} (${cg.label}) ${enabled ? 'will' : 'will no longer'} be told about missed doses`, subject: pid },
+      )
+    },
+  },
+  'patient.stripCheck': {
+    // The server re-runs the match on the text read from the photo; the phone's own verdict isn't trusted.
+    roles: ['patient'],
+    run: (s, p, c) => {
+      const pid = me(c, 'patient').patientId
+      const text = str(p, 'text', { min: 1, max: 4000 })
+      const mine = [...new Set(s.meds.filter((m) => m.patientId === pid).map((m) => m.brand))]
+      const r = matchStripText(text, mine)
+      const what = r.product ? r.product.brand : 'unreadable'
+      const detail = { match: `matches ${r.mine}`, 'same-medicine': `same medicine as ${r.mine}`, 'not-on-list': 'NOT one of the patient\'s medicines', unreadable: 'could not be read' }[r.verdict]
+      return one(s, { actor: actorName(s, c.session), action: 'STRIP_CHECK', detail: `Photo of a strip: ${what} — ${detail}${r.by ? ` (by ${r.by})` : ''}`, subject: pid }, r)
+    },
+  },
+  'caregiver.confirmTaken': {
+    roles: ['caregiver'],
+    run: (s, p, c) => {
+      const { cg, pid, r, dayKey } = caregiverDose(s, p, c)
+      return one(
+        { ...s, doseLog: { ...s.doseLog, [`${r.id}@${dayKey}`]: { action: 'taken', at: c.now, by: cg.name } } },
+        { actor: actorName(s, c.session), action: 'DOSE_TAKEN', detail: `${r.brand} (${r.time}) on ${dayKey} — confirmed by ${cg.name}, ${cg.label.toLowerCase()}`, subject: pid },
+      )
+    },
+  },
+  'caregiver.acknowledge': {
+    roles: ['caregiver'],
+    run: (s, p, c) => {
+      const { cg, pid, r, dayKey } = caregiverDose(s, p, c)
+      const note = optStr(p, 'note', { max: 200 }) ?? 'Handling it'
+      const key = `${r.id}@${dayKey}`
+      if (s.escalationAcks?.[key]) throw conflict(`${s.escalationAcks[key]?.by} is already handling this.`)
+      return one(
+        { ...s, escalationAcks: { ...(s.escalationAcks ?? {}), [key]: { by: cg.name, at: c.now, note } } },
+        { actor: actorName(s, c.session), action: 'ESCALATION_ACKNOWLEDGED', detail: `${r.brand} (${r.time}) on ${dayKey}: "${note}"`, subject: pid },
+      )
+    },
+  },
   'patient.logDose': {
     roles: ['patient'],
     run: (s, p, c) => {
@@ -440,7 +490,12 @@ export const ACTIONS: Record<string, ActionDef> = {
       const rx = s.rxs.find((r) => r.code === code) ?? (() => { throw notFound(`Prescription ${code}`) })()
       const value = {
         code: rx.code, signedAt: rx.signedAt, patientName: pName(s, rx.patientId), doctorName: dName(s, rx.doctorId),
-        items: rx.items.map((i) => ({ ...i, inStock: s.stock.some((x) => x.name === i.brand && x.qty > 0) })),
+        items: rx.items.map((i) => ({
+          ...i,
+          mrp: normalise(i.brand)?.mrp ?? null,
+          inStock: s.stock.some((x) => x.name === i.brand && x.qty > 0),
+          cheaper: cheaperEquivalents(i.brand).map((c) => ({ brand: c.product.brand, mrp: c.product.mrp, savePct: c.savePct, savePerStrip: c.savePerStrip, janAushadhi: !!c.product.janAushadhi, inStock: s.stock.some((x) => x.name === c.product.brand && x.qty > 0) })),
+        })),
       }
       return one(s, { actor: PHARMACIST, action: 'RX_REDEEMED', detail: `${rx.code} opened at the counter`, subject: rx.patientId }, value)
     },
@@ -455,12 +510,17 @@ export const ACTIONS: Record<string, ActionDef> = {
   },
   'pharmacy.attest': {
     roles: ['pharmacy'],
-    run: (s, p) => {
+    run: (s, p, c) => {
       const { rx, prescribed, scanned } = scanInput(s, p)
       const r = checkSubstitution(prescribed, scanned)
       if (r.verdict === 'BLOCKED') throw conflict('Blocked substitutions cannot be attested. Send it to the prescriber.')
+      // A different brand (even an identical, cheaper one) is the patient's choice: the pharmacist must confirm they agreed.
+      if (r.verdict === 'EQUIVALENT' && p.patientAgreed !== true) throw conflict('Ask the patient first: a different brand needs their agreement.')
       const offline = p.offlineAt !== undefined ? ` (done offline, synced)` : ''
-      return one(s, { actor: PHARMACIST, action: r.verdict === 'EXACT' ? 'DISPENSED' : 'SUBSTITUTION_ATTESTED', detail: `${rx.code}: dispensed ${scanned.brand} for ${prescribed.brand}${r.verdict === 'EQUIVALENT' ? ' — pharmacist attested equivalence' : ''}${offline}`, subject: rx.patientId })
+      const save = Math.max(0, prescribed.mrp - scanned.mrp)
+      const savedText = save > 0 ? ` — patient saves Rs ${save} per strip (demo prices)` : ''
+      const d = { patientId: rx.patientId, rxCode: rx.code, prescribed: prescribed.brand, dispensed: scanned.brand, at: c.now, savePerStrip: save }
+      return one({ ...s, dispensed: [d, ...(s.dispensed ?? [])].slice(0, 500) }, { actor: PHARMACIST, action: r.verdict === 'EXACT' ? 'DISPENSED' : 'SUBSTITUTION_ATTESTED', detail: `${rx.code}: dispensed ${scanned.brand} for ${prescribed.brand}${r.verdict === 'EQUIVALENT' ? ' — pharmacist attested equivalence, patient agreed' : ''}${savedText}${offline}`, subject: rx.patientId })
     },
   },
   'pharmacy.escalate': {
@@ -514,6 +574,16 @@ function clinicCodeDoctor(s: State, raw: string, now: number): Doctor {
   const d = doctorOf(s, hit.doctorId)
   if (!d.verified) throw forbidden('This doctor is not verified.')
   return d
+}
+
+/** The caregiver's linked patient, still consented, and one of that patient's doses. */
+function caregiverDose(s: State, p: Obj, c: Ctx) {
+  const se = me(c, 'caregiver')
+  const cg = patientOf(s, se.patientId).caregivers?.find((x) => x.id === se.caregiverId)
+  if (!cg) throw forbidden()
+  if (!cg.enabled) throw forbidden(`${pName(s, se.patientId)} has paused sharing doses with you.`)
+  const r = s.reminders.find((x) => x.id === str(p, 'reminderId', { max: 40 }) && x.patientId === se.patientId) ?? (() => { throw notFound('Dose') })()
+  return { cg, pid: se.patientId, r, dayKey: str(p, 'dayKey', { pattern: DAY }) }
 }
 
 function scanInput(s: State, p: Obj) {
