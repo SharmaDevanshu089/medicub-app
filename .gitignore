@@ -1,0 +1,27 @@
+# dependencies & builds
+node_modules/
+dist/
+dist-patient/
+.vercel/
+*.log
+
+# secrets (Vercel env pulled locally: BLOB token, OIDC token)
+.env*.local
+.env.local
+
+# local server database
+server/data/
+
+# Android build outputs (the published APK lives in public/)
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/capacitor-cordova-android-plugins/build/
+android/app/src/main/assets/public/
+/medicub-patient-debug.apk
+
+# editor / OS
+.DS_Store
+Thumbs.db
+.idea/

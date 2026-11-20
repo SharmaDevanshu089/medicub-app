@@ -1,0 +1,9 @@
+node_modules
+android
+dist
+dist-patient
+server/data
+.vercel/output
+medicub-patient-debug.apk
+*.log
+.env*

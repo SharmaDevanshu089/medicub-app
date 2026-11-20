@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Medicub</string>
+    <string name="title_activity_main">Medicub</string>
+    <string name="package_name">com.medicub.patient</string>
+    <string name="custom_url_scheme">com.medicub.patient</string>
+</resources>
