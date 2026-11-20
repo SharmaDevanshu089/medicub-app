@@ -1,0 +1,11 @@
+{
+  "appId": "com.medicub.patient",
+  "appName": "Medicub",
+  "webDir": "dist-patient",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#FEF6EC"
+  }
+}
