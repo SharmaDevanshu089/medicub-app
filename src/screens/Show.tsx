@@ -33,7 +33,6 @@ const STEPS: Step[] = [
   { id: 'intro', center: true, kicker: 'CATALYST · Problem Statement 4', title: 'One patient.\nOne medication record.', sub: 'Medicub: safer, connected care from doctor to patient to pharmacy.', ...ROW },
   { id: 'problem', kicker: 'The problem', title: 'Many clinicians.\nOne patient.\nNo single list.', sub: 'Records go fragmented and out of date: duplicate therapy, dosing errors, interactions, confusion.', ...SPREAD },
   { id: 'hub', kicker: 'Our answer', title: 'One shared medication record.', sub: 'Doctors, patient and pharmacy read and write the same list: brand and generic, strength, dose, timing.', ...SPREAD },
-  { id: 'scenario', kicker: 'The defining scenario', title: 'Two specialists.\nOne hidden duplicate.', sub: 'Ramesh, 62, has diabetes and hypertension. A new prescription repeats amlodipine under another brand name.', lap: { x: 1250, ...OFF, m: 'home' }, phone: { x: 1500, ...OFF, m: 'lock' }, tab: { x: 1200, ...OFF, m: 'counter' } },
   { id: 'share', kicker: '1 · Consent', title: 'The patient shares by scanning the desk QR.', sub: 'No data moves. The scan grants time-limited access he can stop any time.', lap: { x: 1060, y: 540, s: 0.88, m: 'qr' }, phone: { x: 1640, y: 560, s: 1.05, m: 'scan' }, tab: { x: 1200, ...OFF, m: 'counter' } },
   { id: 'flag', kicker: '2 · Doctor', title: "Risky prescriptions can't be signed until a doctor decides.", sub: 'Ranked by severity, explained, and the prescriber is asked: is this combination intentional?', lap: { x: 1250, y: 545, s: 1.18, m: 'flag' }, phone: { x: 1700, ...OFF, m: 'scan' }, tab: { x: 1200, ...OFF, m: 'counter' } },
   { id: 'adherence', kicker: '3 · Context', title: 'Is it the medicine, or the missed doses?', sub: '14 days of doses beside the wearable BP estimate. Context, not a diagnosis.', lap: { x: 1250, y: 545, s: 1.18, m: 'adherence' }, phone: { x: 1700, ...OFF, m: 'reminder' }, tab: { x: 1200, ...OFF, m: 'counter' } },
@@ -46,6 +45,7 @@ const STEPS: Step[] = [
   { id: 'fit', kicker: 'Problem Statement 4', title: 'Every requirement, covered.', sub: 'All seven asks, all three innovation levers, and the safety guardrail.', lap: { x: 1250, ...OFF, m: 'home' }, phone: { x: 1500, ...OFF, m: 'lock' }, tab: { x: 1200, ...OFF, m: 'counter' } },
   { id: 'roadmap', kicker: "What's next", title: 'Built today.\nNext, with funding.', sub: 'Honest about what is simulated in this prototype.', lap: { x: 1250, ...OFF, m: 'home' }, phone: { x: 1500, ...OFF, m: 'lock' }, tab: { x: 1200, ...OFF, m: 'counter' } },
   { id: 'end', center: true, kicker: 'Thank you', title: 'Medicub', sub: 'Try it live · medicub.vercel.app', ...ROW },
+  { id: 'scenario', kicker: 'The defining scenario', title: 'Two specialists.\nOne hidden duplicate.', sub: 'Ramesh, 62, has diabetes and hypertension. A new prescription repeats amlodipine under another brand name.', lap: { x: 1250, ...OFF, m: 'home' }, phone: { x: 1500, ...OFF, m: 'lock' }, tab: { x: 1200, ...OFF, m: 'counter' } },
 ]
 
 const K = (k: string) => `[data-k="${k}"]`

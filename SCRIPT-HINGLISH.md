@@ -24,46 +24,46 @@ Total: the show takes about **6 min**, then the live demo about **5 min**, then 
 ### 3 · Our answer *(20 sec)*
 "Isliye humne banaya **ek shared medication record.** Doctor, patient aur pharmacy, teeno same list dekhte hain aur update karte hain. Brand naam, generic naam, strength, dose, timing, sab ek jagah. Aur har change record hota hai."
 
-### 4 · Defining scenario *(30 sec)*
-"Ye brief ka hi scenario hai. Ramesh ji, 62 saal, diabetes aur hypertension. Do specialists ko dikhate hain. Wo pehle se **Amlong 5** le rahe hain, jo hai **amlodipine**. Ab ek nayi prescription aati hai: **Telma-AM**. Naam alag hai, lekin isme bhi **amlodipine** hai. Matlab same dawai, do brand naam se, double dose ka risk. Aur Ramesh ji ko yaad bhi nahi ki last prescription kisne badli. Dekhte hain Medicub kya karta hai."
-
-### 5 · Consent *(25 sec)*
+### 4 · Consent *(25 sec)*
 "Sabse pehle, control patient ke haath mein hai. Doctor ki table pe ek QR code hai. Ramesh ji phone se scan karte hain aur *hold to share* dabate hain. Data copy nahi hota. Bas doctor ko **kuch ghanton ka access** milta hai, aur Ramesh ji jab chahein band kar sakte hain. Aur doctor tabhi login kar sakta hai jab DigiLocker aur NMC se verify ho."
 
-### 6 · Doctor *(40 sec)* — sabse important slide
+### 5 · Doctor *(40 sec)* — sabse important slide
 "Doctor nayi prescription type karti hain, Telma-AM. Turant flag aata hai: **HIGH, duplicate therapy, amlodipine**, aur reason simple bhasha mein likha hai. Ab Sign button dekhiye: **sign block ho gaya.** System khud decide nahi karta. Wo doctor se poochta hai: *kya ye combination jaan-boojh kar diya hai?* Doctor apna decision aur reason likhti hain, tabhi sign hota hai. Jab tak ek **named doctor** decide nahi karta, flag open rehta hai."
 
-### 7 · Context *(30 sec)*
+### 6 · Context *(30 sec)*
 "Dose badhane se pehle doctor ko sochna chahiye: dawai kaam nahi kar rahi, ya patient dawai miss kar raha hai? Yahan 14 din ki doses hain, saath mein watch ka BP estimate. Ramesh ji ne **78%** doses li. Jis din dose miss hui, BP average **143** tha. Jis din saari doses li, **130.** Ye sirf context hai doctor ke liye. Ye estimate hai, diagnosis nahi."
 
-### 8 · Patient *(25 sec)*
+### 7 · Patient *(25 sec)*
 "Ramesh ji ke liye sab simple hai. Phone pe aur watch pe reminder aata hai. Ek bada button: **I've taken it.** Miss hui dose bhi record hoti hai, toh pata rehta hai ki actually kya liya gaya. Aur doubt ho toh app hamesha kehta hai: *agli dose se pehle doctor ya pharmacist se poochiye.* App kabhi nahi kehta ki dawai band karo."
 
-### 9 · Caregivers *(30 sec)*
+### 8 · Caregivers *(30 sec)*
 "Bahut patients phone theek se use nahi kar paate, toh family important hai. Agar dose mark nahi hui toh ek ladder chalti hai. Dose time pe reminder, 15 minute baad doosra reminder, 30 minute baad beti Sunita ko alert, aur agli subah ASHA worker ko. Sunita ne confirm kiya, *He's taken it*, aur alerts ruk gaye. Caregiver ko sirf doses dikhti hain, **medical record nahi.** Aur Ramesh ji kisi ko bhi pause kar sakte hain."
 
-### 10 · Pharmacy *(30 sec)*
+### 9 · Pharmacy *(30 sec)*
 "Ab pharmacy counter. Pharmacist pack scan karta hai. Galat pack, ingredient match nahi kiya: **BLOCKED.** Pharmacy bhi khud decide nahi karti. Ek click mein case wapas prescriber ke inbox mein chala jaata hai. Aur internet na ho tab bhi chalta hai, baad mein sync ho jaata hai."
 
-### 11 · Savings *(25 sec)*
+### 10 · Savings *(25 sec)*
 "Jahan sasta equivalent available hai, Medicub **Jan Aushadhi generic** suggest karta hai. Same ingredient, same strength, same form, aur price ek-tihaai. Demo mein ₹30 ki jagah ₹10 ki strip. Lekin dawai tabhi badalti hai jab **patient haan bole**, aur saving record hoti hai."
 
-### 12 · Easy capture *(20 sec)*
+### 11 · Easy capture *(20 sec)*
 "Patient ko type karna na pade. Ramesh ji strip ki photo lete hain, phone padh leta hai aur list se match karta hai. Ye strip unki list mein **nahi hai**, toh app kehta hai: *lene se pehle doctor ya pharmacist se poochiye.*"
 
-### 13 · Trust *(25 sec)*
+### 12 · Trust *(25 sec)*
 "Har action, har insaan ka, ek **tamper-proof chain** mein jaata hai, SHA-256 hashing se. Agar koi ek bhi entry badle, jaise ye prescription, toh chain wahin toot jaati hai aur dikh jaata hai ki kahan gadbad hui. Brief mein jo *verification loop with audit trail* maanga tha, wo yahi hai."
 
-### 14 · Every requirement *(30 sec)*
+### 13 · Every requirement *(30 sec)*
 "Toh brief ke against dekhein: unified record, duplicate-ingredient detection, interaction checks, smart schedule, sign se pehle reconciliation, shared access, aur patient-friendly design. **Saaton** cover hain. Teeno innovation levers bhi hain: photo se capture, explainable ranked flags, aur audit trail ke saath verification loop. Aur safety guardrail: Medicub **kabhi dawai band, change ya substitute nahi karta.** Har flag ek professional ke paas jaata hai."
 
-### 15 · What's next *(25 sec)*
+### 14 · What's next *(25 sec)*
 "Hum honest rehna chahte hain. Prototype mein kuch cheezein simulated hain: DigiLocker aur NMC checks mock hain, vitals synthetic hain, aur drug list chhoti hai. Funding aur partners ke saath agla step hai: **voice call aur SMS reminders**, **ABDM integration**, ek **medical language model**, iOS app, national drug database, aur sabse zaroori, **aap jaise doctors ke saath clinical validation.**"
 
-### 16 · Thank you *(10 sec)*
-"Yahi hai Medicub: **decision support, not a decision.** Ye live hai medicub.vercel.app pe. Ab main aapko real app dikhata hoon."
+### 15 · Thank you *(10 sec)*
+"Yahi hai Medicub: **decision support, not a decision.** Ye live hai medicub.vercel.app pe. Live demo se pehle, ek aakhri slide: brief ka scenario."
 
-**3 minute mein khatam karna ho:** sirf slides **1, 4, 6, 8, 10, 14, 16** bolo. Baaki pe chupchaap Enter dabao.
+### 16 · Defining scenario *(30 sec)*
+"Ye brief ka hi scenario hai. Ramesh ji, 62 saal, diabetes aur hypertension. Do specialists ko dikhate hain. Wo pehle se **Amlong 5** le rahe hain, jo hai **amlodipine**. Ab ek nayi prescription aati hai: **Telma-AM**. Naam alag hai, lekin isme bhi **amlodipine** hai. Matlab same dawai, do brand naam se, double dose ka risk. Aur Ramesh ji ko yaad bhi nahi ki last prescription kisne badli. Ab yahi scenario main aapko live app mein dikhata hoon."
+
+**3 minute mein khatam karna ho:** sirf slides **1, 5, 7, 9, 13, 15, 16** bolo. Baaki pe chupchaap Enter dabao.
 
 ---
 
