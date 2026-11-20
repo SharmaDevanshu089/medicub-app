@@ -41,15 +41,13 @@ pharmacy PH-DEMO-01 / 4321; console admin key `medicub-admin-demo`; department a
 - Ops console: server health, counts, audit log, verify/tamper, live server logs with level filter.
 
 ## Version control & deploys
-- Code: private GitHub repo **https://github.com/SEARIG/medicub** (branch `main`).
-- Every push to `main` runs `.github/workflows/deploy.yml`: typecheck → tests → `vercel build --prod` → deploy to
-  https://medicub.vercel.app. A newer push cancels an older running deploy, so production always matches the latest
-  commit. Pull requests get the same checks and a preview URL.
-- One-time setup: repo secret `VERCEL_TOKEN` (a token from the Vercel account that owns the project). Without it the
-  workflow still checks the code but skips the deploy.
-- Why not Vercel's own Git link: the Vercel account's GitHub login is a different GitHub user than SEARIG, so Vercel
-  can't read this private repo. GitHub Actions deploys instead.
-- Workflow: change code → `git commit` → `git push` → watch the Actions tab. Don't deploy by hand any more.
+- Code: private GitHub repo **https://github.com/SharmaDevanshu089/medicub-app** (branch `main`), owned by the same
+  person as the Vercel account. (A first copy also exists at github.com/SEARIG/medicub, git remote `searig`.)
+  The older public repo SharmaDevanshu089/medicub is a different codebase and was left untouched.
+- Vercel's Git integration is connected: **every push to `main` deploys to https://medicub.vercel.app**, other
+  branches and pull requests get preview URLs. No manual deploys.
+- GitHub Actions (`.github/workflows/checks.yml`) runs install → typecheck → tests on every push and pull request.
+- Workflow: change code → `git commit` → `git push` → Vercel builds and goes live in about a minute.
 
 ## Live deployment (20 Nov, ~09:15)
 - **https://medicub.vercel.app** — Vercel project `medicub` on account sharmadevanshu089-5884 (Hobby), functions in Mumbai (bom1).
