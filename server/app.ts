@@ -151,7 +151,7 @@ export function createApp(opts: ServerOptions) {
   async function login(body: unknown, ip: string) {
     limit(`login:${ip}`, 30)
     const b = obj(body)
-    const role = oneOf(b, 'role', ['doctor', 'patient', 'pharmacy', 'department', 'admin'] as const)
+    const role = oneOf(b, 'role', ['doctor', 'patient', 'pharmacy', 'department', 'caregiver', 'admin'] as const)
     const s = S()
     let session: Session | null = null
     let who = 'Unknown'
@@ -164,6 +164,10 @@ export function createApp(opts: ServerOptions) {
       const phone = str(b, 'phone', { max: 20 }).replace(/[^\d+]/g, '')
       const p = DEMO_LOGINS.patients.find((x) => x.phone === phone || x.phone.endsWith(phone.replace(/^\+?91/, '')))
       if (p) { session = { role, patientId: p.patientId }; who = s.patients.find((x) => x.id === p.patientId)?.name ?? p.patientId } else who = `phone ••${phone.slice(-4)}`
+    } else if (role === 'caregiver') {
+      const phone = str(b, 'phone', { max: 20 }).replace(/[^\d+]/g, '')
+      const c = DEMO_LOGINS.caregivers.find((x) => x.phone === phone || x.phone.endsWith(phone.replace(/^\+?91/, '')))
+      if (c) { session = { role, caregiverId: c.caregiverId, patientId: c.patientId }; who = c.caregiverId } else who = `phone ••${phone.slice(-4)}`
     } else if (role === 'pharmacy') {
       const code = str(b, 'code', { max: 20 }).toUpperCase()
       const pin = str(b, 'pin', { max: 12 })
@@ -178,7 +182,7 @@ export function createApp(opts: ServerOptions) {
     if (!session) {
       log('warn', 'auth.login_failed', { role, ip })
       await record([{ actor: who, action: 'LOGIN_FAILED', detail: `Failed ${role} sign-in` }])
-      throw new AppError('UNAUTHENTICATED', role === 'doctor' ? 'No verified doctor with those details.' : role === 'pharmacy' ? 'Wrong pharmacy code or PIN.' : role === 'patient' ? 'No Medicub account for that phone number.' : 'Wrong admin key.')
+      throw new AppError('UNAUTHENTICATED', role === 'doctor' ? 'No verified doctor with those details.' : role === 'pharmacy' ? 'Wrong pharmacy code or PIN.' : role === 'patient' || role === 'caregiver' ? 'No Medicub account for that phone number.' : 'Wrong admin key.')
     }
     const se = session
     const token = newToken()

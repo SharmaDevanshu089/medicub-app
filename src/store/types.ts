@@ -32,6 +32,36 @@ export interface Patient {
   conditions: { name: string; since: string }[]
   caregiver?: string
   currentDoctorId: DoctorId | null
+  /** People who get missed-dose escalations. Optional: older snapshots don't have it. */
+  caregivers?: Caregiver[]
+}
+
+/** Escalation ladder contact. `enabled` is the patient's consent; they can pause it any time. */
+export interface Caregiver {
+  id: string
+  name: string
+  relation: 'family' | 'asha'
+  /** Display label, e.g. "Daughter" or "ASHA worker, Indiranagar". */
+  label: string
+  phone: string
+  enabled: boolean
+}
+
+export interface Dispensed {
+  patientId: PatientId
+  rxCode: string
+  prescribed: string
+  dispensed: string
+  at: number
+  /** Rupees per strip of 10 at demo prices; 0 when the same brand was dispensed. */
+  savePerStrip: number
+}
+
+/** A caregiver took responsibility for a missed dose ("I called him"), which stops further escalation. */
+export interface EscalationAck {
+  by: string
+  at: number
+  note: string
 }
 
 export type ReportKind = 'X-ray' | 'Lab' | 'ECG' | 'Scan' | 'Discharge' | 'Other'
@@ -90,6 +120,8 @@ export interface DoseEntry {
   action: DoseAction
   at: number
   until?: number
+  /** Set when someone other than the patient recorded it (a caregiver). */
+  by?: string
 }
 
 export type DecisionKind = 'intentional' | 'change-planned' | 'dismissed' | 'approved' | 'rejected'
@@ -222,5 +254,9 @@ export interface State {
   announcements?: Announcement[]
   /** Rotating codes shown as a QR on a doctor's desk. Optional for older snapshots. */
   clinicCodes?: ClinicCode[]
+  /** Keyed `${reminderId}@${dayKey}`. */
+  escalationAcks?: Record<string, EscalationAck>
+  /** What the pharmacy actually handed over, with savings when a cheaper equivalent was chosen. */
+  dispensed?: Dispensed[]
   audit: AuditEntry[]
 }

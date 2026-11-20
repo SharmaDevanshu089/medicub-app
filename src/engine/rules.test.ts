@@ -40,7 +40,7 @@ describe('R-DUP-001', () => {
 
 describe('R-INT-001', () => {
   it('ACE inhibitor + ARB → CRITICAL', () => {
-    const testAce: Product = { brand: 'TestACE', ingredients: [{ name: 'test-acei', mg: 1, drugClass: 'ACE inhibitor' }], form: 'tablet', barcode: 'x' }
+    const testAce: Product = { brand: 'TestACE', ingredients: [{ name: 'test-acei', mg: 1, drugClass: 'ACE inhibitor' }], form: 'tablet', barcode: 'x', mrp: 1 }
     const f = checkInteractions(
       [
         { brand: 'TestACE', dosesPerDay: 1, source: 'a' },

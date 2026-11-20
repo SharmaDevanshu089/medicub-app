@@ -8,7 +8,7 @@ export function viewFor(s: State, se: Session, now: number): State {
   }
   // Public doctor directory: names, specialty, clinic and pass/fail of checks (no ID documents).
   const doctors = s.doctors.map(({ idDocument: _id, ...d }) => d)
-  const base: State = { ...s, ...none, doctors, patients: [], doctorId: null, phoneLocation: { label: 'Hidden', lat: 0, lng: 0 }, announcements: [], clinicCodes: [] }
+  const base: State = { ...s, ...none, doctors, patients: [], doctorId: null, phoneLocation: { label: 'Hidden', lat: 0, lng: 0 }, announcements: [], clinicCodes: [], escalationAcks: {}, dispensed: [] }
   const pick = (ids: Set<string>) => ({
     patients: s.patients.filter((p) => ids.has(p.id)),
     meds: s.meds.filter((m) => ids.has(m.patientId)),
@@ -19,6 +19,8 @@ export function viewFor(s: State, se: Session, now: number): State {
     notes: s.notes.filter((n) => ids.has(n.patientId)),
     vitals: Object.fromEntries(Object.entries(s.vitals).filter(([k]) => ids.has(k))),
     audit: s.audit.filter((e) => e.subject && ids.has(e.subject)),
+    escalationAcks: Object.fromEntries(Object.entries(s.escalationAcks ?? {}).filter(([k]) => s.reminders.some((r) => ids.has(r.patientId) && k.startsWith(`${r.id}@`)))),
+    dispensed: (s.dispensed ?? []).filter((d) => ids.has(d.patientId)),
   })
 
   switch (se.role) {
@@ -52,6 +54,17 @@ export function viewFor(s: State, se: Session, now: number): State {
         checkIns: s.checkIns.filter((c) => c.doctorId === se.doctorId),
         inbox: s.inbox.filter((m) => m.toId === se.doctorId),
       }
+    }
+    case 'caregiver': {
+      // Minimum necessary: the linked patient's name, schedule and dose outcomes. No records, flags or notes.
+      const p = s.patients.find((x) => x.id === se.patientId)
+      const cg = p?.caregivers?.find((x) => x.id === se.caregiverId)
+      if (!p || !cg) return base
+      const slim = { id: p.id, name: p.name, age: p.age, sex: p.sex, conditions: [], currentDoctorId: null, caregivers: p.caregivers }
+      if (!cg.enabled) return { ...base, patients: [slim] } // paused by the patient: show nothing else
+      const ids = new Set([p.id])
+      const picked = pick(ids)
+      return { ...base, patients: [slim], reminders: picked.reminders, doseLog: picked.doseLog, escalationAcks: picked.escalationAcks }
     }
     case 'pharmacy':
       // shortcut: one pharmacy in the demo, so "own escalations" = flags raised from a pharmacy. Scope by pharmacyId when there are several.

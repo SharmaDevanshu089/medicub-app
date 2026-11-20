@@ -8,7 +8,7 @@ import type { CheckResult } from '../services/verification'
 import type { DecisionKind, DoctorId, DoseAction, Note, PatientId, PhoneLocation, Reminder, Report, State, StockItem } from './types'
 
 export { hasAccess } from '../core/session'
-export type AppName = 'doctor' | 'patient' | 'pharmacy' | 'department' | 'admin'
+export type AppName = 'doctor' | 'patient' | 'pharmacy' | 'department' | 'caregiver' | 'admin'
 
 const API = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ?? ''
 export type Status = 'signed-out' | 'connecting' | 'online' | 'reconnecting'
@@ -260,10 +260,11 @@ export const addNote = (n: Pick<Note, 'patientId' | 'text'>) => act(me?.session.
 export const addReport = (r: Omit<Report, 'id' | 'author' | 'department'>) => act('records.addReport', { ...r })
 
 // pharmacy
-export interface RedeemedRx { code: string; signedAt: number; patientName: string; doctorName: string; items: { brand: string; dosesPerDay: number; inStock: boolean }[] }
+export interface RedeemedRx { code: string; signedAt: number; patientName: string; doctorName: string; items: { brand: string; dosesPerDay: number; inStock: boolean; mrp?: number | null; cheaper?: Cheaper[] }[] }
+export interface Cheaper { brand: string; mrp: number; savePct: number; savePerStrip: number; janAushadhi: boolean; inStock: boolean }
 export const redeemRx = (code: string) => act<RedeemedRx>('pharmacy.redeem', { code })
 export const scanPack = (rxCode: string, prescribed: string, scanned: string) => act<SubResult>('pharmacy.scan', { rxCode, prescribed, scanned })
-export const attest = (rxCode: string, prescribed: string, scanned: string, offlineAt?: number) => act('pharmacy.attest', { rxCode, prescribed, scanned, ...(offlineAt ? { offlineAt } : {}) })
+export const attest = (rxCode: string, prescribed: string, scanned: string, patientAgreed: boolean, offlineAt?: number) => act('pharmacy.attest', { rxCode, prescribed, scanned, patientAgreed, ...(offlineAt ? { offlineAt } : {}) })
 export const escalate = (rxCode: string, prescribed: string, scanned: string, offlineAt?: number) => act('pharmacy.escalate', { rxCode, prescribed, scanned, ...(offlineAt ? { offlineAt } : {}) })
 export const importStock = (rows: StockItem[]) => act('pharmacy.importStock', { rows })
 export const reportConnectivity = (online: boolean, queued = 0) => void act('pharmacy.connectivity', { online, queued }, { quiet: true }).catch(() => undefined)
@@ -279,3 +280,8 @@ export interface ScannedDoctor { doctorId: DoctorId; name: string; specialty: st
 export const issueClinicQr = () => act<{ code: string; expiresAt: number }>('doctor.issueQr', {}, { quiet: true })
 export const lookupDoctorQr = (code: string) => act<ScannedDoctor>('patient.lookupDoctorQr', { code }, { quiet: true })
 export const scanDoctorQr = (code: string) => act<DoctorId>('patient.scanDoctorQr', { code })
+
+// caregivers (escalation ladder)
+export const caregiverConfirmTaken = (reminderId: string, dayKey: string) => act('caregiver.confirmTaken', { reminderId, dayKey })
+export const caregiverAcknowledge = (reminderId: string, dayKey: string, note: string) => act('caregiver.acknowledge', { reminderId, dayKey, note })
+export const setCaregiverAlerts = (caregiverId: string, enabled: boolean) => act('patient.setCaregiverAlerts', { caregiverId, enabled })

@@ -1,19 +1,20 @@
 import { useRef, useState } from 'react'
 import { fmtTime } from '../lib/time'
 import { HOME } from '../store/seed'
-import { doctorName, revokeConsent, setPhoneLocation } from '../store/store'
+import { doctorName, revokeConsent, setCaregiverAlerts, setPhoneLocation } from '../store/store'
 import type { State } from '../store/types'
 import { I } from './icons'
 import { collapse, gsap, Pressable, reducedMotion, useStaggerIn } from './motion'
 import { initials, patientView } from './view'
 
-export function Me({ s, v, onTapTag, onQr, onClock, onReplay }: { s: State; v: ReturnType<typeof patientView>; onTapTag: () => void; onQr: () => void; onClock: () => void; onReplay: () => void }) {
+export function Me({ s, v, onTapTag, onQr, onCheck, onClock, onReplay }: { s: State; v: ReturnType<typeof patientView>; onTapTag: () => void; onQr: () => void; onCheck: () => void; onClock: () => void; onReplay: () => void }) {
   const root = useRef<HTMLDivElement>(null)
   const [stock, setStock] = useState(false)
   const stockBody = useRef<HTMLDivElement>(null)
   useStaggerIn(root, 'me')
   const me = v.me
   if (!me) return null
+  const saved = (s.dispensed ?? []).filter((d) => d.patientId === me.id).reduce((n, d) => n + d.savePerStrip, 0)
   const brands = [...new Set(s.meds.filter((m) => m.patientId === me.id).map((m) => m.brand))]
   const places = [HOME, ...s.doctors.filter((d) => d.verified).map((d) => ({ label: `Near ${d.clinic.name}`, lat: d.clinic.lat + 0.0004, lng: d.clinic.lng }))]
 
@@ -46,8 +47,34 @@ export function Me({ s, v, onTapTag, onQr, onClock, onReplay }: { s: State; v: R
         </div>
       </section>
 
+      {me.caregivers?.length ? (
+        <section data-anim className="flex flex-col gap-2.5">
+          <h2 className="m-0 text-lg font-bold">If I miss a medicine</h2>
+          <div className="flex flex-col overflow-hidden rounded-[20px] bg-white">
+            {me.caregivers.map((c) => (
+              <label key={c.id} className="flex cursor-pointer items-center gap-3 border-t border-divider px-4 py-3.5 first:border-0">
+                <div className="flex flex-1 flex-col"><span className="font-bold">{c.name}</span><span className="text-sm text-muted">{c.label} · {c.relation === 'asha' ? 'next morning' : 'after 30 min'}</span></div>
+                <input type="checkbox" role="switch" checked={c.enabled} onChange={(e) => void setCaregiverAlerts(c.id, e.target.checked)} className="size-6 accent-[#5E6B3A]" aria-label={`Tell ${c.name} if I miss a dose`} />
+              </label>
+            ))}
+          </div>
+          <span className="px-1 text-sm text-subtle">They see only whether you took your doses — not your records.</span>
+        </section>
+      ) : null}
+
+      {saved > 0 && (
+        <section data-anim className="flex items-center gap-3 rounded-[20px] bg-sage-100 p-4 text-sage-900">
+          <I n="heart" size={22} />
+          <span className="flex-1">You've saved <b>₹{saved}</b> per refill with Jan Aushadhi generics <span className="text-sm">(demo prices)</span></span>
+        </section>
+      )}
+
       <section data-anim className="flex flex-col overflow-hidden rounded-[20px] bg-white">
-        <div className="flex items-center gap-3 p-4"><span className="flex-1 font-semibold">Caregiver</span><span className="text-[15px] text-muted">{me.caregiver ?? 'None'}</span></div>
+        <button onClick={onCheck} className="flex w-full cursor-pointer items-center gap-3 p-4 text-left" style={{ touchAction: 'manipulation' }}>
+          <span className="text-sage-800"><I n="camera" size={20} /></span>
+          <span className="flex-1 font-semibold">Check a medicine strip</span>
+          <span className="text-subtle"><I n="chevron" size={20} /></span>
+        </button>
         <button onClick={toggleStock} aria-expanded={stock} className="flex w-full cursor-pointer items-center gap-3 border-t border-divider p-4 text-left" style={{ touchAction: 'manipulation' }}>
           <span className="text-sage-800"><I n="store" size={20} /></span>
           <span className="flex-1 font-semibold">Which pharmacy has my medicine</span>

@@ -8,6 +8,7 @@ import { initials } from '../patient/view'
 import { addNote, addReminder, doctorName, sendSecondOpinion, viewRecord } from '../store/store'
 import type { Doctor, Note, PatientId, Report, State } from '../store/types'
 import { XrayPlaceholder } from '../ui/kit'
+import { AdherenceCard } from './Adherence'
 import { FlagCard } from './FlagCard'
 import { Prescribe } from './Prescribe'
 
@@ -16,7 +17,7 @@ const TABS: { k: Tab; label: string }[] = [
   { k: 'overview', label: 'Overview' },
   { k: 'prescribe', label: 'Prescribe' },
   { k: 'history', label: 'History' },
-  { k: 'vitals', label: 'Vitals' },
+  { k: 'vitals', label: 'Adherence & vitals' },
   { k: 'more', label: 'More' },
 ]
 
@@ -74,7 +75,7 @@ export function Patient360({ s, me, pid, t }: { s: State; me: Doctor; pid: Patie
         {tab === 'overview' && <Overview s={s} me={me} pid={pid} t={t} onPrescribe={() => setTab('prescribe')} />}
         {tab === 'prescribe' && <Prescribe s={s} me={me} pid={pid} t={t} />}
         {tab === 'history' && <History s={s} me={me} pid={pid} />}
-        {tab === 'vitals' && <Vitals s={s} pid={pid} />}
+        {tab === 'vitals' && <div className="flex flex-col gap-5"><AdherenceCard s={s} pid={pid} t={t} /><Vitals s={s} pid={pid} /></div>}
         {tab === 'more' && <More s={s} me={me} pid={pid} />}
       </div>
     </div>
@@ -133,6 +134,7 @@ function Overview({ s, me, pid, t, onPrescribe }: { s: State; me: Doctor; pid: P
           </div>
         ))}
         {meds.length === 0 && <p className="m-0 text-muted">No active medicines.</p>}
+        <AdherenceCard s={s} pid={pid} t={t} compact />
         <p className="m-0 text-xs text-subtle">Brand data: demo — verify against label.</p>
       </section>
     </div>

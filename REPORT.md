@@ -87,6 +87,13 @@ pharmacy PH-DEMO-01 / 4321; console admin key `medicub-admin-demo`; department a
 - Install: copy the APK to the phone and open it (allow "install unknown apps"), or `adb install -r medicub-patient-debug.apk`.
 - Not in the APK yet: real NFC reading (tap is simulated), native push notifications, Wear OS watch app, release signing.
 
+## Four new features (20 Nov, ~10:30)
+- **Adherence vs vitals (doctor)** — Patient → "Adherence & vitals": a 14-day dose grid (taken / missed / skipped / not yet due, with a dot when a caregiver confirmed it) lined up with the wearable BP estimate. Days with a missed dose are shaded, and one plain sentence compares the average BP on those days with fully-taken days. It only describes; it never says whether the medicine works. A "% doses taken" chip also shows on Overview.
+- **Caregiver escalation ladder** — https://medicub.vercel.app/caregiver (demo: Sunita, daughter, +919845000002; Anita Devi, ASHA, +919845000003). The steps: phone and watch at dose time → a second reminder after 15 min → family after 30 min → the ASHA worker the next morning at 09:00. "He's taken it" records the dose (with the caregiver's name, audited); "I'll handle it" / "I'll visit" stops the ladder. The patient can turn each caregiver on or off in Me. Caregivers see doses only, never records. The timings are marked CLINICIAN-REVIEW in `src/engine/care.ts`.
+- **Jan Aushadhi generic at the pharmacy** — after redeeming, the selected line shows the cheapest same-ingredient/strength/form option and the saving (demo prices). "Offer to patient" fills the scan; the substitution check still runs. Attesting an EQUIVALENT now **requires** the "patient agreed" tick (the server rejects it otherwise). The saving is recorded and shown on the patient's Me screen.
+- **Strip photo check (patient)** — Today / Me → "Check a medicine strip": a photo is read on the phone (tesseract.js, loaded only when used; it needs internet the first time), or the patient types the name. The server compares it with the patient's list: *this is your X* / *same medicine as your X* / *not on your list → Ask your doctor or pharmacist before taking it* / *couldn't read*.
+- Tests: 40 passing (new `src/engine/care.test.ts`, plus action tests for caregivers, savings and strip checks).
+
 ## Not done (next steps, in order)
 1. Run server + apps together and click through every flow; fix whatever breaks.
 2. **Android app**: Android SDK + Java 21 are installed; plan is Capacitor wrapping the patient build

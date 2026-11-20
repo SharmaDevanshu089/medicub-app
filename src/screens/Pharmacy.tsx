@@ -17,7 +17,7 @@ const APP = { fontFamily: 'var(--font-app)' }
 const input = 'h-14 rounded-2xl border-[1.5px] border-line bg-white px-4 text-lg'
 
 // ---------- offline queue (kept on this device until the server is reachable) ----------
-interface Queued { id: string; kind: 'attest' | 'escalate'; rxCode: string; prescribed: string; scanned: string; at: number }
+interface Queued { id: string; kind: 'attest' | 'escalate'; rxCode: string; prescribed: string; scanned: string; at: number; patientAgreed?: boolean }
 const QKEY = 'medicub:pharmacy-queue'
 const RXKEY = 'medicub:pharmacy-rx-cache'
 const readJson = <T,>(k: string, fallback: T): T => {
@@ -120,7 +120,7 @@ function PharmacyApp() {
     let left = items
     for (const q of items) {
       try {
-        await (q.kind === 'attest' ? attest(q.rxCode, q.prescribed, q.scanned, q.at) : escalate(q.rxCode, q.prescribed, q.scanned, q.at))
+        await (q.kind === 'attest' ? attest(q.rxCode, q.prescribed, q.scanned, !!q.patientAgreed, q.at) : escalate(q.rxCode, q.prescribed, q.scanned, q.at))
         left = left.filter((x) => x.id !== q.id)
       } catch (e) {
         if ((e as { code?: string }).code === 'NETWORK') break // still offline: keep the rest
@@ -228,15 +228,15 @@ function Dispense({ offline, enqueue }: { offline: boolean; enqueue: (q: Omit<Qu
     if (!offline) void scanPack(rx.code, prescribed.brand, scanned.brand).catch(() => undefined)
   }
 
-  const act = async (kind: 'attest' | 'escalate') => {
+  const act = async (kind: 'attest' | 'escalate', patientAgreed = false) => {
     if (!rx || !line || !result) return
     if (offline) {
-      enqueue({ kind, rxCode: rx.code, prescribed: line, scanned: result.scanned })
+      enqueue({ kind, rxCode: rx.code, prescribed: line, scanned: result.scanned, patientAgreed })
       return setDone('queued')
     }
     setBusy(true)
     try {
-      await (kind === 'attest' ? attest(rx.code, line, result.scanned) : escalate(rx.code, line, result.scanned))
+      await (kind === 'attest' ? attest(rx.code, line, result.scanned, patientAgreed) : escalate(rx.code, line, result.scanned))
       setDone(kind === 'attest' ? 'attested' : 'sent')
     } catch {
       /* toast already shown */
@@ -264,6 +264,17 @@ function Dispense({ offline, enqueue }: { offline: boolean; enqueue: (q: Omit<Qu
                 <span className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${i.inStock ? 'bg-sage-100 text-sage-900' : 'bg-red-100 text-red-800'}`}>{i.inStock ? 'IN STOCK' : 'OUT OF STOCK'}</span>
               </Pressable>
             ))}
+            {rx.items.filter((i) => line === i.brand && i.cheaper?.length).map((i) => {
+              const c = i.cheaper![0]!
+              return (
+                <div key={c.brand} className="flex flex-wrap items-center gap-3 rounded-2xl bg-sage-50 p-3 text-sage-900">
+                  <I n="heart" size={20} />
+                  <span className="min-w-0 flex-1 text-[15px]"><b>{c.janAushadhi ? 'Jan Aushadhi generic' : 'Cheaper equivalent'}:</b> {c.brand} · ₹{c.mrp} vs ₹{i.mrp} per strip — <b>save {c.savePct}%</b>{c.inStock ? '' : ' · not in stock'}</span>
+                  <Pressable disabled={!c.inStock} onClick={() => { setScan(c.brand); setTimeout(() => scanRef.current?.focus(), 50) }} className="h-10 rounded-xl bg-sage-700 px-3 text-sm font-bold text-white">Offer to patient</Pressable>
+                  <span className="w-full text-xs text-sage-800">Same ingredients, strength and form. Only with the patient's agreement — the substitution check still runs. Demo prices.</span>
+                </div>
+              )
+            })}
           </div>
         )}
         {line && (
@@ -292,8 +303,11 @@ function Dispense({ offline, enqueue }: { offline: boolean; enqueue: (q: Omit<Qu
   )
 }
 
-function Verdict({ prescribed, scanned, r, done, busy, offline, onAct }: { prescribed: string; scanned: string; r: SubResult; done: string; busy: boolean; offline: boolean; onAct: (k: 'attest' | 'escalate') => void }) {
+function Verdict({ prescribed, scanned, r, done, busy, offline, onAct }: { prescribed: string; scanned: string; r: SubResult; done: string; busy: boolean; offline: boolean; onAct: (k: 'attest' | 'escalate', agreed?: boolean) => void }) {
   const box = useRef<HTMLDivElement>(null)
+  const [agreed, setAgreed] = useState(false)
+  const save = (normalise(prescribed)?.mrp ?? 0) - (normalise(scanned)?.mrp ?? 0)
+  const swap = r.verdict === 'EQUIVALENT'
   const blocked = r.verdict === 'BLOCKED'
   useGSAP(() => {
     if (reducedMotion()) return
@@ -324,7 +338,15 @@ function Verdict({ prescribed, scanned, r, done, busy, offline, onAct }: { presc
         : done === 'attested' ? <p className="m-0 flex items-center gap-2 rounded-2xl bg-sage-50 p-4 font-bold text-sage-900"><I n="check" stroke={2.6} /> Recorded in the audit log.</p>
         : done === 'sent' ? <p className="m-0 flex items-center gap-2 rounded-2xl bg-sage-50 p-4 font-bold text-sage-900"><I n="send" /> Sent to the prescriber's inbox.</p>
         : blocked ? <Pressable disabled={busy} onClick={() => onAct('escalate')} className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-red-700 text-lg font-bold text-white"><I n="send" /> {offline ? 'Queue for prescriber' : 'Send to prescriber'}</Pressable>
-        : <Pressable disabled={busy} onClick={() => onAct('attest')} className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-sage-700 text-lg font-bold text-white"><I n="shield" /> {r.verdict === 'EXACT' ? 'Confirm dispense' : 'I attest this is equivalent'}</Pressable>}
+        : <>
+          {swap && (
+            <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-white p-4 ring-[1.5px] ring-cream-200">
+              <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-1 size-5 accent-[#5E6B3A]" />
+              <span><b>The patient agreed to {scanned}</b> instead of {prescribed}.{save > 0 && <> They save <b>₹{save} per strip</b> (demo price).</>}</span>
+            </label>
+          )}
+          <Pressable disabled={busy || (swap && !agreed)} onClick={() => onAct('attest', agreed)} className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-sage-700 text-lg font-bold text-white"><I n="shield" /> {r.verdict === 'EXACT' ? 'Confirm dispense' : 'I attest this is equivalent'}</Pressable>
+        </>}
     </div>
   )
 }

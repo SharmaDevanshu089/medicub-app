@@ -69,7 +69,8 @@ describe('pharmacy', () => {
     let s = seed(T)
     expect(run(s, 'pharmacy.scan', { rxCode: 'RX-1001', prescribed: 'Amlong 5', scanned: '8900000000028' }, pharmacy).value).toMatchObject({ verdict: 'BLOCKED' })
     expect(code(() => run(s, 'pharmacy.attest', { rxCode: 'RX-1001', prescribed: 'Amlong 5', scanned: 'Telma-AM 40/5' }, pharmacy))).toBe('CONFLICT')
-    expect(run(s, 'pharmacy.attest', { rxCode: 'RX-1001', prescribed: 'Amlong 5', scanned: 'Stamlo 5' }, pharmacy).events[0]?.action).toBe('SUBSTITUTION_ATTESTED')
+    expect(code(() => run(s, 'pharmacy.attest', { rxCode: 'RX-1001', prescribed: 'Amlong 5', scanned: 'Stamlo 5' }, pharmacy))).toBe('CONFLICT') // patient not asked
+    expect(run(s, 'pharmacy.attest', { rxCode: 'RX-1001', prescribed: 'Amlong 5', scanned: 'Stamlo 5', patientAgreed: true }, pharmacy).events[0]?.action).toBe('SUBSTITUTION_ATTESTED')
     s = run(s, 'pharmacy.escalate', { rxCode: 'RX-1001', prescribed: 'Amlong 5', scanned: 'Telma-AM 40/5' }, pharmacy).state
     expect(s.flags[0]?.request?.rxCode).toBe('RX-1001')
     expect(s.flags[0]?.ownerId).toBe('meera')
@@ -148,5 +149,39 @@ describe('logs page grouping', () => {
     expect(categoryOf('RX_SIGNED')).toBe('clinical')
     expect(categoryOf('SUBSTITUTION_ATTESTED')).toBe('pharmacy')
     expect(categoryOf('NOTIFICATION_SENT')).toBe('system')
+  })
+})
+
+describe('caregivers, savings and strip checks', () => {
+  const sunita: Session = { role: 'caregiver', caregiverId: 'cg-sunita', patientId: 'p1' }
+  it('a caregiver sees only doses, can confirm or take over, and is stopped when the patient pauses them', () => {
+    let s = seed(T)
+    const v = viewFor(s, sunita, T)
+    expect(v.reminders.length).toBeGreaterThan(0)
+    expect(v.reports).toEqual([])
+    expect(v.flags).toEqual([])
+    expect(v.patients[0]?.conditions).toEqual([])
+    s = run(s, 'caregiver.acknowledge', { reminderId: 'r1', dayKey: '2026-11-20', note: 'Called Papa' }, sunita).state
+    expect(s.escalationAcks?.['r1@2026-11-20']?.by).toBe('Sunita Kumar')
+    expect(code(() => run(s, 'caregiver.acknowledge', { reminderId: 'r1', dayKey: '2026-11-20' }, sunita))).toBe('CONFLICT')
+    s = run(s, 'caregiver.confirmTaken', { reminderId: 'r1', dayKey: '2026-11-20' }, sunita).state
+    expect(s.doseLog['r1@2026-11-20']).toMatchObject({ action: 'taken', by: 'Sunita Kumar' })
+    expect(code(() => run(s, 'caregiver.confirmTaken', { reminderId: 'r9', dayKey: '2026-11-20' }, sunita))).toBe('NOT_FOUND')
+    s = run(s, 'patient.setCaregiverAlerts', { caregiverId: 'cg-sunita', enabled: false }, ramesh).state
+    expect(viewFor(s, sunita, T).reminders).toEqual([])
+    expect(code(() => run(s, 'caregiver.confirmTaken', { reminderId: 'r2', dayKey: '2026-11-20' }, sunita))).toBe('FORBIDDEN')
+  })
+  it('records savings when the patient agrees to a cheaper identical generic', () => {
+    const redeemed = run(seed(T), 'pharmacy.redeem', { code: 'RX-1001' }, pharmacy).value as { items: { cheaper: { brand: string }[] }[] }
+    expect(redeemed.items[0]?.cheaper[0]?.brand).toBe('Jan Aushadhi Amlodipine 5')
+    const s = run(seed(T), 'pharmacy.attest', { rxCode: 'RX-1001', prescribed: 'Amlong 5', scanned: 'Jan Aushadhi Amlodipine 5', patientAgreed: true }, pharmacy).state
+    expect(s.dispensed?.[0]).toMatchObject({ patientId: 'p1', savePerStrip: 30 })
+    expect(viewFor(s, ramesh, T).dispensed?.length).toBe(1)
+    expect(viewFor(s, { role: 'patient', patientId: 'p2' }, T).dispensed).toEqual([])
+  })
+  it('re-runs the strip match on the server and audits it', () => {
+    const r = run(seed(T), 'patient.stripCheck', { text: 'TELMA-AM 40/5 tablets' }, ramesh)
+    expect(r.value).toMatchObject({ verdict: 'not-on-list' })
+    expect(r.events[0]?.action).toBe('STRIP_CHECK')
   })
 })

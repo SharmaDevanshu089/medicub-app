@@ -8,6 +8,7 @@ import { gsap, Pressable, reducedMotion, Sheet, useGSAP } from '../patient/motio
 import { Onboarding } from '../patient/Onboarding'
 import { Records } from '../patient/Records'
 import { ScanSheet } from '../patient/ScanSheet'
+import { StripSheet } from '../patient/StripSheet'
 import { GeofenceSheet, NfcSheet } from '../patient/Sheets'
 import { Today } from '../patient/Today'
 import { hhmm12, patientView } from '../patient/view'
@@ -46,7 +47,7 @@ function PatientApp() {
   const v = patientView(s, t)
   const [onboarded, setOnboarded] = useState(readOnboarded)
   const [tab, setTab] = useState<Tab>('today')
-  const [sheet, setSheet] = useState<'nfc' | 'qr' | 'clock' | null>(null)
+  const [sheet, setSheet] = useState<'nfc' | 'qr' | 'clock' | 'strip' | null>(null)
   const [geoHidden, setGeoHidden] = useState('')
   // A QR scanned with the phone's own camera opens /patient?scan=CODE: go straight to the confirm step.
   const [scanCode, setScanCode] = useState<string | undefined>(() => new URLSearchParams(location.search).get('scan') ?? undefined)
@@ -102,9 +103,9 @@ function PatientApp() {
         ) : (
           <>
             <div ref={page} className="flex-1 overflow-x-hidden overflow-y-auto overscroll-contain" onPointerDown={titleDown} onPointerUp={cancelPress} onPointerLeave={cancelPress}>
-              {tab === 'today' && <Today s={s} t={t} v={v} onTapTag={() => setSheet('nfc')} />}
+              {tab === 'today' && <Today s={s} t={t} v={v} onTapTag={() => setSheet('nfc')} onCheck={() => setSheet('strip')} />}
               {tab === 'records' && <Records s={s} v={v} />}
-              {tab === 'me' && <Me s={s} v={v} onTapTag={() => setSheet('nfc')} onQr={() => setSheet('qr')} onClock={() => setSheet('clock')} onReplay={() => { try { localStorage.removeItem(ONBOARD_KEY) } catch { /* ignore */ } setOnboarded(false) }} />}
+              {tab === 'me' && <Me s={s} v={v} onTapTag={() => setSheet('nfc')} onQr={() => setSheet('qr')} onCheck={() => setSheet('strip')} onClock={() => setSheet('clock')} onReplay={() => { try { localStorage.removeItem(ONBOARD_KEY) } catch { /* ignore */ } setOnboarded(false) }} />}
             </div>
             {tab !== 'today' && v.due[0] && <DueToast brand={v.due[0].r.brand} onOpen={() => setTab('today')} />}
             <nav ref={bar} aria-label="Main" className="relative grid h-[84px] grid-cols-3 border-t border-cream-200 bg-white px-3 pt-2 pb-5">
@@ -122,6 +123,7 @@ function PatientApp() {
         {onboarded && unread[0] && <AnnouncementBanner key={unread[0].id} a={unread[0]} more={unread.length - 1} />}
         {sheet === 'nfc' && <NfcSheet doctor={v.tagDoctor} me={v.me} onClose={() => setSheet((x) => (x === 'nfc' ? null : x))} onScanQr={() => setSheet('qr')} />}
         {sheet === 'qr' && <ScanSheet initialCode={scanCode} onClose={() => { setSheet(null); setScanCode(undefined) }} />}
+        {sheet === 'strip' && <StripSheet onClose={() => setSheet(null)} />}
         {sheet === 'clock' && <ClockSheet s={s} t={t} onClose={() => setSheet(null)} />}
         {showGeo && v.candidate && <GeofenceSheet key={v.candidate.id} doctor={v.candidate} me={v.me} onClose={() => setGeoHidden(v.candidate?.id ?? '')} />}
       </div>
