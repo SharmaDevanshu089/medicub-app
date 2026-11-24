@@ -1,4 +1,11 @@
-# Medicub — overnight progress report (20 Nov 2026)
+# Medicub Progress Report
+
+> **NEW**: Medicub v2 (Wispr Flow Hackathon Edition) is now available in the [`v2/`](./v2/) folder!
+> See [**v2/REPORT.md**](./v2/REPORT.md) for full architectural documentation, clean bloat-free design (no demo mode), and the new **Ambient Consultation Scribe** feature powered by Wispr Flow STT.
+
+---
+
+# Medicub v1 (Legacy) — overnight progress report (20 Nov 2026)
 
 Work stopped at ~03:20 IST because the usage limit was reached. All code typechecks and all 25 tests pass.
 **Not yet run together in the browser** (server + new clients) — that is the first thing to do.
