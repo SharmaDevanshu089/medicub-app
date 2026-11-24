@@ -184,6 +184,9 @@ export class LLMExtractionAdapter implements ExtractionAdapter {
     if (text.includes('pantocid')) {
       plan.push('Take Pantocid 40 once daily before breakfast for 14 days')
     }
+    if (text.includes('ecosprin')) {
+      plan.push('Start Ecosprin 75 once daily post-dinner')
+    }
     plan.push('Low-sodium diet: limit pickles, papads, and processed foods')
     plan.push('Adequate hydration: 2 to 2.5 liters water daily')
 
