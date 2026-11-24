@@ -17,6 +17,7 @@
     "build:patient": "vite build --outDir dist-patient --mode patient",
     "android:sync": "npm run build:patient && cap sync android",
     "android:apk": "npm run android:sync && cd android && gradlew.bat assembleDebug",
+    "package:windows": "node scripts/package-windows.mjs",
     "build:vercel": "node scripts/build-vercel.mjs"
   },
   "dependencies": {

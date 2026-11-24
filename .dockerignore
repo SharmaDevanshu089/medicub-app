@@ -1,0 +1,14 @@
+node_modules
+v2/node_modules
+dist
+dist-patient
+dist-windows
+android
+.git
+.github
+.vercel
+*.log
+.env*.local
+server/data
+v2/server/data
+medicub-patient-debug.apk

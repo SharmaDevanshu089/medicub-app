@@ -1,0 +1,73 @@
+name: Build Windows Application
+
+on:
+  push:
+    branches:
+      - main
+      - v2-scribe
+    paths:
+      - 'src/**'
+      - 'v2/**'
+      - 'server/**'
+      - 'scripts/**'
+      - 'package.json'
+      - '.github/workflows/build-windows.yml'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+  release:
+    types: [ created, published ]
+
+concurrency:
+  group: windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-windows:
+    name: Package Windows Desktop App
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install root and v2 dependencies
+        shell: pwsh
+        run: |
+          npm ci
+          cd v2
+          npm ci
+          cd ..
+
+      - name: Compile production web applications
+        shell: pwsh
+        run: |
+          npm run build
+          npm run v2:build
+
+      - name: Package Windows Desktop Distribution
+        shell: pwsh
+        run: |
+          node scripts/package-windows.mjs
+
+      - name: Upload Windows Distribution Zip Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: medicub-windows-x64
+          path: dist-windows/medicub-windows-x64.zip
+          retention-days: 30
+
+      - name: Attach Windows Zip to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist-windows/medicub-windows-x64.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

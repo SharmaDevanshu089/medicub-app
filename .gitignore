@@ -2,6 +2,7 @@
 node_modules/
 dist/
 dist-patient/
+dist-windows/
 .vercel/
 *.log
 

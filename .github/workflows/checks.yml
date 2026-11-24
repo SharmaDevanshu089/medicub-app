@@ -1,6 +1,4 @@
-# Every push and pull request: install, typecheck, run the tests.
-# Deploys are done by Vercel's Git integration: each push to main goes to https://medicub.vercel.app,
-# other branches and pull requests get preview URLs. A red check here means: fix before demoing.
+# Every push and pull request: install, typecheck, build, run all tests (v1 & v2).
 name: Checks
 
 on:
@@ -15,13 +13,32 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
-      - name: Typecheck
-        run: npx tsc --noEmit
-      - name: Tests
-        run: npx vitest run
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install v2 dependencies
+        run: cd v2 && npm ci
+
+      - name: Typecheck v1 and v2
+        run: |
+          npx tsc --noEmit
+          cd v2 && npx tsc --noEmit
+
+      - name: Build Web Production Bundles
+        run: |
+          npm run build
+          npm run v2:build
+
+      - name: Run Test Suites (v1 and v2 - 82 tests)
+        run: |
+          npx vitest run
+          npm run v2:test
