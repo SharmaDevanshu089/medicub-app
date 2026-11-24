@@ -95,10 +95,13 @@ export function RecordingBar({
               </span>
               <span className="rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-sage-200">
                 {isProcessing
-                  ? 'Compiling Notes…'
+                  ? 'Wispr Flow Transcribing…'
                   : isPaused
                     ? 'Paused'
                     : 'Listening'}
+              </span>
+              <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-sage-800/80 px-2 py-0.5 text-[10px] font-bold text-sage-300 ring-1 ring-sage-500/30">
+                <I n="sparkle" size={10} /> Wispr Flow STT
               </span>
             </div>
             <span className="block truncate text-xs text-cream-200/80">

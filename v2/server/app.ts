@@ -11,7 +11,7 @@ import { makeEntry, verifyChain } from '../src/store/audit'
 import { getInitialState } from '../src/store/initial-state'
 import type { Doctor, State } from '../src/store/types'
 import { consultationExtractor } from '../src/ai/extraction'
-import { wisprSTT } from '../src/ai/wispr'
+import { wisprSTT, WISPR_MEDICAL_DICTIONARY } from '../src/ai/wispr'
 import { makeLogger } from './log'
 import type { Persist, Snapshot } from './persist'
 
@@ -366,6 +366,9 @@ export function createApp(opts: ServerOptions) {
         const { session, token } = await sessionOf(req)
         limit(`act:${token}`, 300)
         const body = await readJson(req).catch(() => ({}))
+        if (name === 'consultation.start') {
+          void wisprSTT.warmup().catch(() => false)
+        }
         const value = await apply(name, body, session, token)
         send(200, { value })
         return
@@ -405,10 +408,7 @@ export function createApp(opts: ServerOptions) {
         const entry = audioBuffers.get(sessionId)
         const combinedAudio = entry && entry.chunks.length ? Buffer.concat(entry.chunks) : Buffer.from([])
 
-        // 1. Transcribe with Wispr Flow
-        const sttResult = await wisprSTT.transcribe(combinedAudio, 'webm')
-
-        // 2. Prepare patient & doctor context for LLM extraction
+        // 1. Prepare patient & doctor context for Wispr Flow Voice Interface & LLM extraction
         const patient = s.patients.find((p) => p.id === consultation.patientId)
         const doctor = s.doctors.find((d) => d.id === consultation.doctorId)
         const activeMeds = s.meds.filter((m) => m.patientId === consultation.patientId).map((m) => m.brand)
@@ -421,6 +421,14 @@ export function createApp(opts: ServerOptions) {
           doctorName: doctor?.name ?? 'Consulting Doctor',
           doctorSpecialty: doctor?.specialty ?? 'General Practice',
         }
+
+        // 2. Transcribe with Wispr Flow Voice Interface using medical dictionary
+        const sttResult = await wisprSTT.transcribe(combinedAudio, {
+          format: 'webm',
+          languageHint: 'en',
+          dictionary: [...WISPR_MEDICAL_DICTIONARY, ...activeMeds],
+          contextPrompt: `Clinical consultation with Dr. ${ctx.doctorName} (${ctx.doctorSpecialty}) for ${ctx.patientName}. Current medications: ${activeMeds.join(', ') || 'none'}.`,
+        })
 
         // 3. Extract clinical consultation summary
         const summary = await consultationExtractor.extractConsultation(sttResult.text, ctx)
@@ -441,6 +449,31 @@ export function createApp(opts: ServerOptions) {
           transcript: sttResult.text,
           summary,
         })
+        return
+      }
+
+      if (req.method === 'GET' && url.pathname === '/api/wispr/status') {
+        send(200, {
+          configured: wisprSTT.isConfigured(),
+          streamingSupported: Boolean(wisprSTT.getStreamingWsUrl()),
+          dictionaryCount: WISPR_MEDICAL_DICTIONARY.length,
+          dictionary: WISPR_MEDICAL_DICTIONARY.slice(0, 25),
+          features: [
+            'auto_edits',
+            'medical_dictionary_context',
+            'bilingual_en_hi_detection',
+            'model_prewarming',
+            'diarized_speakers',
+          ],
+        })
+        return
+      }
+
+      if (req.method === 'POST' && url.pathname === '/api/wispr/test') {
+        const body = (await readJson(req).catch(() => ({}))) as { audio?: string; format?: 'webm' | 'wav' }
+        const audioBuf = body.audio ? Buffer.from(body.audio, 'base64') : Buffer.from([])
+        const result = await wisprSTT.transcribe(audioBuf, { format: body.format ?? 'webm' })
+        send(200, result)
         return
       }
 

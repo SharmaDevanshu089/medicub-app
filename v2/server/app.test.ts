@@ -143,4 +143,17 @@ describe('v2 Server — Auth & Consultation Scribe End-to-End API', () => {
     expect(verifyRes.json.ok).toBe(true)
     expect(verifyRes.json.brokenAt).toBeNull()
   })
+
+  it('exposes Wispr Flow voice interface status and testing endpoint', async () => {
+    const statusRes = await api('/api/wispr/status')
+    expect(statusRes.status).toBe(200)
+    expect(statusRes.json.features).toContain('medical_dictionary_context')
+    expect(statusRes.json.dictionaryCount).toBeGreaterThan(30)
+    expect(statusRes.json.features).toContain('auto_edits')
+
+    const testAudioRes = await api('/api/wispr/test', { format: 'webm' })
+    expect(testAudioRes.status).toBe(200)
+    expect(testAudioRes.json.text).toBeTruthy()
+    expect(testAudioRes.json.autoEdited).toBe(true)
+  })
 })

@@ -175,14 +175,18 @@ export function ConsultationCardView({ card, isDoctorView: _isDoctorView = false
 
       {/* Collapsible Raw Transcript */}
       {showTranscript && (
-        <div className="mt-2 rounded-2xl bg-cream-100 p-4 animate-enter">
+        <div className="mt-2 rounded-2xl bg-cream-100 p-4 ring-1 ring-cream-300 animate-enter">
           <div className="flex items-center justify-between text-xs font-bold text-muted mb-2">
-            <span>Raw Wispr Flow Speech-to-Text Transcript</span>
-            <span>Verbatim audio capture</span>
+            <span className="flex items-center gap-1.5 text-brand-700">
+              <I n="sparkle" size={14} /> Wispr Flow Voice Interface Transcript
+            </span>
+            <span className="rounded-full bg-white px-2.5 py-0.5 text-[10px] font-bold text-sage-800 shadow-xs">
+              Auto-edited · Medical Vocabulary
+            </span>
           </div>
-          <p className="m-0 font-mono text-xs leading-relaxed text-ink/80 whitespace-pre-wrap">
+          <div className="rounded-xl bg-white p-3 font-mono text-xs leading-relaxed text-ink/80 whitespace-pre-wrap ring-1 ring-cream-200">
             {card.transcript}
-          </p>
+          </div>
         </div>
       )}
     </article>

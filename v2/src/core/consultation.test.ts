@@ -5,7 +5,7 @@ import { runAction, type Ctx } from './actions'
 import { AppError } from './errors'
 import type { Session } from './session'
 import { viewFor } from './view'
-import { transcribeAudio } from '../ai/wispr'
+import { transcribeAudio, wisprSTT, WISPR_MEDICAL_DICTIONARY } from '../ai/wispr'
 import { extractConsultationContext } from '../ai/extraction'
 
 const NOW = Date.UTC(2026, 10, 24, 10, 0, 0)
@@ -244,14 +244,29 @@ describe('Consultation Scribe - View Scoping & Privacy', () => {
 })
 
 describe('Wispr Flow & Clinical Extraction Layer', () => {
-  it('transcribeAudio returns fallback medical transcript when offline or with mock audio', async () => {
+  it('Wispr Flow adapter includes curated medical dictionary and auto-edits', () => {
+    expect(WISPR_MEDICAL_DICTIONARY).toContain('Amlong')
+    expect(WISPR_MEDICAL_DICTIONARY).toContain('Telma-AM')
+    expect(WISPR_MEDICAL_DICTIONARY).toContain('blood pressure')
+    expect(WISPR_MEDICAL_DICTIONARY).toContain('pedal edema')
+    expect(WISPR_MEDICAL_DICTIONARY.length).toBeGreaterThan(30)
+    expect(typeof wisprSTT.isConfigured()).toBe('boolean')
+  })
+
+  it('transcribeAudio returns auto-edited medical transcript with options', async () => {
     const audioBlob = new Blob(['mock audio data'], { type: 'audio/webm' })
-    const result = await transcribeAudio(audioBlob)
+    const result = await transcribeAudio(audioBlob, {
+      format: 'webm',
+      languageHint: 'en',
+      dictionary: ['Amlong 5', 'pedal edema'],
+      contextPrompt: 'Consultation with Ramesh Kumar',
+    })
 
     expect(result).toBeDefined()
     expect(result.text).toBeTruthy()
     expect(typeof result.durationSeconds).toBe('number')
     expect(result.text).toContain('Doctor')
+    expect(result.autoEdited).toBe(true)
   })
 
   it('extractConsultationContext accurately parses symptoms, timelines, medications, and plain summary', async () => {
