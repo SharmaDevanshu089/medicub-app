@@ -239,7 +239,7 @@ export const ACTIONS: Record<string, ActionDef> = {
   },
 
   'consultation.complete': {
-    roles: ['admin', 'doctor'],
+    roles: ['admin', 'doctor', 'patient'],
     run: (s, p, c) => {
       const sessionId = str(p, 'sessionId', { max: 40 })
       const transcript = str(p, 'transcript', { max: 50_000 })
@@ -249,6 +249,9 @@ export const ACTIONS: Record<string, ActionDef> = {
 
       const session = (s.consultations ?? []).find((x) => x.id === sessionId)
       if (!session) throw notFound('Consultation session')
+
+      if (c.session.role === 'patient' && session.patientId !== c.session.patientId) throw forbidden()
+      if (c.session.role === 'doctor' && session.doctorId !== c.session.doctorId) throw forbidden()
 
       const doctor = doctorOf(s, session.doctorId)
       const patient = patientOf(s, session.patientId)

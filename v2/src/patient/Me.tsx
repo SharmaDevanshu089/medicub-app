@@ -7,7 +7,7 @@ import { I } from './icons'
 import { collapse, gsap, Pressable, reducedMotion, useStaggerIn } from './motion'
 import { initials, patientView } from './view'
 
-export function Me({ s, v, onTapTag, onQr, onCheck, onClock, onReplay }: { s: State; v: ReturnType<typeof patientView>; onTapTag: () => void; onQr: () => void; onCheck: () => void; onClock: () => void; onReplay: () => void }) {
+export function Me({ s, v, onTapTag, onQr, onCheck }: { s: State; v: ReturnType<typeof patientView>; onTapTag: () => void; onQr: () => void; onCheck: () => void }) {
   const root = useRef<HTMLDivElement>(null)
   const [stock, setStock] = useState(false)
   const stockBody = useRef<HTMLDivElement>(null)
@@ -98,18 +98,13 @@ export function Me({ s, v, onTapTag, onQr, onCheck, onClock, onReplay }: { s: St
         )}
       </section>
 
-      <section data-anim className="flex flex-col gap-3 rounded-[20px] border-[1.5px] border-dashed border-line p-4">
-        <span className="text-sm font-bold tracking-wide text-subtle uppercase">Demo controls</span>
-        <label className="flex flex-col gap-1 text-[15px] font-semibold">Location (simulated GPS)
-          <select className="h-12 rounded-xl border-[1.5px] border-line bg-white px-3 text-base" value={s.phoneLocation.label} onChange={(e) => { const p = places.find((x) => x.label === e.target.value); if (p) setPhoneLocation(p) }}>
+      <section data-anim className="flex flex-col gap-2 rounded-[20px] bg-white p-4">
+        <label className="flex flex-col gap-1 text-[15px] font-semibold text-ink">Device Location
+          <select className="h-12 rounded-xl border-[1.5px] border-line bg-white px-3 text-base text-ink" value={s.phoneLocation.label} onChange={(e) => { const p = places.find((x) => x.label === e.target.value); if (p) setPhoneLocation(p) }}>
             {places.map((p) => <option key={p.label}>{p.label}</option>)}
           </select>
         </label>
-        <div className="grid grid-cols-2 gap-2.5">
-          <Pressable onClick={onClock} className="h-12 rounded-xl bg-cream-100 text-[15px] font-bold">Demo clock</Pressable>
-          <Pressable onClick={onReplay} className="h-12 rounded-xl bg-cream-100 text-[15px] font-bold">Replay setup</Pressable>
-        </div>
-        <p className="m-0 text-[13px] text-subtle">Synthetic data. Tip: long-press the screen title for the demo clock.</p>
+        <span className="text-xs text-muted">Geofenced location used for verified in-clinic check-ins.</span>
       </section>
     </div>
   )

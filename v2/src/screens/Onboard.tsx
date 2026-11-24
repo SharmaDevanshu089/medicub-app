@@ -45,8 +45,8 @@ export default function Onboard() {
 
   const fillDemo = () => {
     const c = CLINIC_PRESETS[0]
-    setF({ name: 'Dr Kavya Nair', email: 'kavya@demo.medicub', specialty: 'General Medicine', regNo: 'KMC-2015-55821', council: 'Karnataka Medical Council', clinicName: c?.name ?? '', lat: String(c?.lat ?? ''), lng: String(c?.lng ?? '') })
-    setIdFile({ fileName: 'kavya-nair-id-demo.pdf', sizeKb: 212 })
+    setF({ name: 'Dr Kavya Nair', email: 'kavya@medicub.in', specialty: 'General Medicine', regNo: 'KMC-2015-55821', council: 'Karnataka Medical Council', clinicName: c?.name ?? '', lat: String(c?.lat ?? ''), lng: String(c?.lng ?? '') })
+    setIdFile({ fileName: 'kavya-nair-credential.pdf', sizeKb: 212 })
     setChecks([])
     setState('idle')
   }
@@ -73,7 +73,7 @@ export default function Onboard() {
       <header className="flex items-center gap-3 border-b border-cream-200 px-5 py-3">
         <a href="/doctor" className="grid size-10 place-items-center rounded-xl bg-brand-600 text-white" aria-label="Back to sign-in"><I n="plus" size={22} stroke={2.4} /></a>
         <span className="text-xl font-extrabold">Join Medicub as a doctor</span>
-        <Pressable onClick={fillDemo} className="ml-auto h-10 rounded-xl bg-cream-100 px-3 text-sm font-bold">Fill demo doctor</Pressable>
+        <Pressable onClick={fillDemo} className="ml-auto h-10 rounded-xl bg-cream-100 px-3 text-sm font-bold text-ink hover:bg-cream-200">Sample Credentials</Pressable>
       </header>
       <div className="mx-auto flex max-w-2xl flex-col gap-5 p-5">
         <div className="flex flex-col gap-2">

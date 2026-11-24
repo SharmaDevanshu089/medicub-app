@@ -51,8 +51,8 @@ function SignIn() {
         <label data-anim className="flex flex-col gap-1.5 font-semibold text-muted">Department<select className={field} value={dept} onChange={(e) => setDept(e.target.value)}>{DEPARTMENTS.map((d) => <option key={d}>{d}</option>)}</select></label>
         {err && <p className="m-0 font-semibold text-red-700" role="alert">{err}</p>}
         <Pressable data-anim disabled={name.trim().length < 2} onClick={() => void go(name.trim(), dept)} className="h-14 rounded-2xl bg-sage-700 text-lg font-bold text-white">Sign in</Pressable>
-        <Pressable data-anim onClick={() => void go('Dr S. Pillai', 'Radiology')} className="h-12 rounded-2xl bg-cream-100 font-bold">Demo: Dr S. Pillai, Radiology</Pressable>
-        <p data-anim className="m-0 text-xs text-subtle">Demo: staff sign in by name. Production uses hospital SSO with role assignment.</p>
+        <Pressable data-anim onClick={() => void go('Dr S. Pillai', 'Radiology')} className="h-12 rounded-2xl bg-cream-100 font-bold text-ink hover:bg-cream-200">Quick Sign In: Dr S. Pillai (Radiology)</Pressable>
+        <p data-anim className="m-0 text-xs text-subtle">Staff sign in by department name or clinical credentials.</p>
       </div>
     </div>
   )

@@ -38,10 +38,10 @@ function SignIn() {
       </label>
       {err && <p className="m-0 font-semibold text-red-700" role="alert">{err}</p>}
       <Pressable data-anim disabled={phone.replace(/\D/g, '').length < 10} onClick={() => void go(`+91${phone}`)} className="h-14 rounded-2xl bg-sage-700 text-lg font-bold text-white">Continue</Pressable>
-      <div data-anim className="mt-auto flex flex-col gap-2 rounded-2xl border-[1.5px] border-dashed border-line p-4">
-        <span className="text-sm font-bold text-subtle">Demo</span>
-        <Pressable onClick={() => void go('+919845000002')} className="h-12 rounded-xl bg-cream-100 font-bold">Sunita — Ramesh's daughter</Pressable>
-        <Pressable onClick={() => void go('+919845000003')} className="h-12 rounded-xl bg-cream-100 font-bold">Anita Devi — ASHA worker</Pressable>
+      <div data-anim className="mt-auto flex flex-col gap-2 rounded-2xl border-[1.5px] border-line bg-white p-4 shadow-sm">
+        <span className="text-sm font-bold text-subtle">Registered Caregivers</span>
+        <Pressable onClick={() => void go('+919845000002')} className="h-12 rounded-xl bg-cream-100 font-bold text-ink hover:bg-cream-200">Sunita — Ramesh's daughter</Pressable>
+        <Pressable onClick={() => void go('+919845000003')} className="h-12 rounded-xl bg-cream-100 font-bold text-ink hover:bg-cream-200">Anita Devi — ASHA worker</Pressable>
       </div>
     </div>
   )

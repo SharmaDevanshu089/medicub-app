@@ -31,7 +31,7 @@ function WatchSignIn() {
       <span className="text-sage-300"><I n="user" size={32} /></span>
       <b className="text-xl">Sign in on your phone</b>
       <span className="text-sm text-white/70">Your watch uses your phone's Medicub account.</span>
-      <Pressable onClick={() => void login({ phone: '+919845000001' }).catch(() => undefined)} className="mt-1 h-12 rounded-full bg-white px-5 font-bold text-ink">Demo: pair as Ramesh</Pressable>
+      <Pressable onClick={() => void login({ phone: '+919845000001' }).catch(() => undefined)} className="mt-1 h-12 rounded-full bg-white px-5 font-bold text-ink hover:bg-cream-100">Pair with Ramesh's Phone</Pressable>
     </div>
   )
 }

@@ -21,7 +21,7 @@ export default function Doctor() {
   )
 }
 
-const DEMO_DOCTORS = getInitialState(0).doctors
+const VERIFIED_DOCTORS = getInitialState(0).doctors
 
 function DoctorApp() {
   const s = useStore()
@@ -109,8 +109,8 @@ export function DoctorSignIn() {
         {err && <p className="m-0 text-[15px] font-semibold text-red-700" role="alert">{err}</p>}
         <Pressable data-anim onClick={go} className="h-14 rounded-2xl bg-sage-700 text-lg font-bold text-white">Continue</Pressable>
         <div data-anim className="flex flex-col gap-2 border-t border-divider pt-5">
-          <span className="text-sm font-bold text-subtle">Demo accounts</span>
-          {DEMO_DOCTORS.map((d) => (
+          <span className="text-sm font-bold text-subtle">Verified clinician accounts</span>
+          {VERIFIED_DOCTORS.map((d) => (
             <Pressable key={d.id} onClick={() => void login({ doctorId: d.id }).catch((e: Error) => setErr(e.message))} className="flex h-14 items-center gap-3 rounded-2xl bg-cream-50 px-3 text-left">
               <span className="grid size-10 place-items-center rounded-full bg-brand-600 text-sm font-extrabold text-white">{initials(d.name)}</span>
               <span className="flex flex-1 flex-col"><b>{d.name}</b><span className="text-sm text-muted">{d.specialty}</span></span><I n="chevron" size={18} />

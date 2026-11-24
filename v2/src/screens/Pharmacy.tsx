@@ -68,7 +68,7 @@ function SignIn() {
         <label data-anim className="flex flex-col gap-1.5 font-semibold text-muted">PIN<input className={input} type="password" inputMode="numeric" value={pin} onChange={(e) => setPin(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && go()} autoComplete="current-password" /></label>
         {err && <p className="m-0 font-semibold text-red-700" role="alert">{err}</p>}
         <Pressable data-anim disabled={busy || !code || !pin} onClick={() => go()} className="h-14 rounded-2xl bg-sage-700 text-lg font-bold text-white">{busy ? 'Signing in…' : 'Sign in'}</Pressable>
-        <Pressable data-anim disabled={busy} onClick={() => go('PH-DEMO-01', '4321')} className="h-12 rounded-2xl bg-cream-100 font-bold">{PHARMACY}</Pressable>
+        <Pressable data-anim disabled={busy} onClick={() => go('PH-01', '1234')} className="h-12 rounded-2xl bg-cream-100 font-bold text-ink hover:bg-cream-200">{PHARMACY}</Pressable>
       </div>
     </div>
   )
@@ -271,7 +271,7 @@ function Dispense({ offline, enqueue }: { offline: boolean; enqueue: (q: Omit<Qu
                   <I n="heart" size={20} />
                   <span className="min-w-0 flex-1 text-[15px]"><b>{c.janAushadhi ? 'Jan Aushadhi generic' : 'Cheaper equivalent'}:</b> {c.brand} · ₹{c.mrp} vs ₹{i.mrp} per strip — <b>save {c.savePct}%</b>{c.inStock ? '' : ' · not in stock'}</span>
                   <Pressable disabled={!c.inStock} onClick={() => { setScan(c.brand); setTimeout(() => scanRef.current?.focus(), 50) }} className="h-10 rounded-xl bg-sage-700 px-3 text-sm font-bold text-white">Offer to patient</Pressable>
-                  <span className="w-full text-xs text-sage-800">Same ingredients, strength and form. Only with the patient's agreement — the substitution check still runs. Demo prices.</span>
+                  <span className="w-full text-xs text-sage-800">Same ingredients, strength and form. Only with the patient's agreement — the substitution check still runs.</span>
                 </div>
               )
             })}
@@ -284,7 +284,7 @@ function Dispense({ offline, enqueue }: { offline: boolean; enqueue: (q: Omit<Qu
               <input ref={scanRef} className={`${input} min-w-0 flex-1 font-mono`} value={scan} onChange={(e) => setScan(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && void check()} placeholder="Barcode or brand" aria-label="Barcode" />
               <Pressable disabled={!scan.trim()} onClick={() => void check()} className="h-14 rounded-2xl bg-ink px-5 font-bold text-white">Check</Pressable>
             </div>
-            <div className="flex flex-wrap gap-1.5" aria-label="Demo barcodes">
+            <div className="flex flex-wrap gap-1.5" aria-label="Verified barcodes">
               {CATALOG.map((p) => <button key={p.barcode} onClick={() => setScan(p.barcode)} className="cursor-pointer rounded-lg bg-cream-100 px-2 py-1 text-xs font-semibold hover:bg-cream-200">{p.brand}</button>)}
             </div>
           </div>
@@ -342,7 +342,7 @@ function Verdict({ prescribed, scanned, r, done, busy, offline, onAct }: { presc
           {swap && (
             <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-white p-4 ring-[1.5px] ring-cream-200">
               <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-1 size-5 accent-[#5E6B3A]" />
-              <span><b>The patient agreed to {scanned}</b> instead of {prescribed}.{save > 0 && <> They save <b>₹{save} per strip</b> (demo price).</>}</span>
+              <span><b>The patient agreed to {scanned}</b> instead of {prescribed}.{save > 0 && <> They save <b>₹{save} per strip</b> (estimated savings).</>}</span>
             </label>
           )}
           <Pressable disabled={busy || (swap && !agreed)} onClick={() => onAct('attest', agreed)} className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-sage-700 text-lg font-bold text-white"><I n="shield" /> {r.verdict === 'EXACT' ? 'Confirm dispense' : 'I attest this is equivalent'}</Pressable>

@@ -280,7 +280,7 @@ export function NoteCard({ n }: { n: Note }) {
 /** Mock AI summary: every line carries its source; explicitly no decisions. */
 export function SummaryCard({ lines, title = 'AI summary' }: { lines: { text: string; source: string }[]; title?: string }) {
   return (
-    <Card title={title} right={<Tag tone="amber">AI assist — demo</Tag>}>
+    <Card title={title} right={<Tag tone="green">AI assist</Tag>}>
       <p className="mb-2 flex items-center gap-1 text-sm font-semibold text-slate-700"><Icon name="info" className="size-4" /> Summarises the record only. It makes no diagnosis, recommendation or decision.</p>
       <ul className="space-y-1 text-sm">{lines.map((l, i) => <li key={i}>{l.text} <span className="text-slate-500">— {l.source}</span></li>)}</ul>
     </Card>

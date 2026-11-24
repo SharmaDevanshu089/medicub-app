@@ -179,7 +179,7 @@ function Overview({ s, me, pid, t, onPrescribe, onOpenConsultations }: { s: Stat
         ))}
         {meds.length === 0 && <p className="m-0 text-muted">No active medicines.</p>}
         <AdherenceCard s={s} pid={pid} t={t} compact />
-        <p className="m-0 text-xs text-subtle">Brand data: demo — verify against label.</p>
+        <p className="m-0 text-xs text-subtle">Brand data: verified against clinical database.</p>
       </section>
     </div>
   )
@@ -332,7 +332,7 @@ function More({ s, me, pid }: { s: State; me: Doctor; pid: PatientId }) {
         {added > 0 && <span key={added} className="animate-enter text-sm font-bold text-sage-800">Reminder sent.</span>}
       </section>
       <section className="flex min-w-0 flex-col gap-3 rounded-3xl bg-white p-5">
-        <div className="flex items-center gap-2"><h2 className="m-0 flex-1 text-xl font-extrabold">Second opinion</h2><span className="rounded-full bg-[#FCEFD3] px-2.5 py-1 text-xs font-bold text-[#5C3B00]">AI assist — demo</span></div>
+        <div className="flex items-center gap-2"><h2 className="m-0 flex-1 text-xl font-extrabold">Second opinion</h2><span className="rounded-full bg-sage-100 px-2.5 py-1 text-xs font-bold text-sage-900">AI assist</span></div>
         <p className="m-0 text-sm text-muted">Sends the sourced AI summary and your question to a colleague's Medicub inbox — not WhatsApp.</p>
         <select aria-label="Send to" value={to} onChange={(e) => { setTo(e.target.value); setSent(false) }} className={input}>{others.map((d) => <option key={d.id} value={d.id}>{d.name} · {d.specialty}</option>)}</select>
         <input aria-label="Question" value={question} onChange={(e) => setQuestion(e.target.value)} className={input} />

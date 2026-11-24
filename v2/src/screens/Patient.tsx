@@ -103,7 +103,7 @@ function PatientApp() {
             <div ref={page} className="flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
               {tab === 'today' && <Today s={s} t={t} v={v} onTapTag={() => setSheet('nfc')} onCheck={() => setSheet('strip')} />}
               {tab === 'records' && <Records s={s} v={v} />}
-              {tab === 'me' && <Me s={s} v={v} onTapTag={() => setSheet('nfc')} onQr={() => setSheet('qr')} onCheck={() => setSheet('strip')} onClock={() => undefined} onReplay={() => { try { localStorage.removeItem(ONBOARD_KEY) } catch { /* ignore */ } setOnboarded(false) }} />}
+              {tab === 'me' && <Me s={s} v={v} onTapTag={() => setSheet('nfc')} onQr={() => setSheet('qr')} onCheck={() => setSheet('strip')} />}
             </div>
             {tab !== 'today' && v.due[0] && <DueToast brand={v.due[0].r.brand} onOpen={() => setTab('today')} />}
             <nav ref={bar} aria-label="Main" className="relative grid h-[84px] grid-cols-3 border-t border-cream-200 bg-white px-3 pt-2 pb-5">
@@ -187,9 +187,9 @@ function PatientSignIn() {
       </label>
       {err && <p className="m-0 font-semibold text-red-700" role="alert">{err}</p>}
       <Pressable data-anim disabled={busy || phone.replace(/\D/g, '').length < 10} onClick={() => go(`+91${phone}`)} className="h-[58px] rounded-2xl bg-sage-700 text-lg font-bold text-white">{busy ? 'Signing in…' : 'Continue'}</Pressable>
-      <div data-anim className="mt-auto flex flex-col gap-2 rounded-2xl border-[1.5px] border-dashed border-line p-4">
-        <span className="text-sm font-bold text-subtle">Demo</span>
-        <Pressable disabled={busy} onClick={() => go('+919845000001')} className="h-12 rounded-xl bg-cream-100 font-bold">Continue as Ramesh Kumar</Pressable>
+      <div data-anim className="mt-auto flex flex-col gap-2 rounded-2xl border-[1.5px] border-line bg-white p-4 shadow-sm">
+        <span className="text-sm font-bold text-subtle">Fast Sign-in</span>
+        <Pressable disabled={busy} onClick={() => go('+919845000001')} className="h-12 rounded-xl bg-cream-100 font-bold text-ink hover:bg-cream-200">Continue as Ramesh Kumar</Pressable>
       </div>
     </div>
   )

@@ -14,6 +14,26 @@ export const CLINIC_PRESETS = [
 const DAY = 86_400_000
 const HOUR = 3_600_000
 
+const MISSED: Record<string, number[]> = { r1: [3, 4, 10], r2: [4], r3: [2, 9, 10] }
+const SKIPPED: Record<string, number[]> = { r3: [7] }
+const TIMES: Record<string, string> = { r1: '08:00', r2: '08:30', r3: '20:30' }
+const BP_14: [number, number][] = [
+  [128, 82], [130, 83], [127, 81], [131, 84], [144, 90], [146, 91], [132, 84], [129, 82], [128, 81], [130, 83], [143, 89], [145, 90], [131, 84], [133, 85],
+]
+
+function doseHistory(now: number): Record<string, DoseEntry> {
+  const log: Record<string, DoseEntry> = {}
+  for (let ago = 14; ago >= 1; ago--) {
+    const t = now - ago * DAY
+    for (const id of ['r1', 'r2', 'r3']) {
+      if (MISSED[id]?.includes(ago)) continue
+      const at = timeOn(t, TIMES[id] ?? '08:00') + ((ago * 7 + id.length * 11) % 30 + 5) * 60_000
+      log[`${id}@${dayKey(t)}`] = { action: SKIPPED[id]?.includes(ago) ? 'skipped' : 'taken', at }
+    }
+  }
+  return log
+}
+
 const verifiedChecks = (t: number): CheckResult[] => [
   { source: 'DigiLocker', status: 'pass', detail: 'Identity verified', mock: true },
   { source: 'NMC registry', status: 'pass', detail: `Active registration (${new Date(t).getFullYear()})`, mock: true },
@@ -81,15 +101,6 @@ export function getInitialState(now = Date.now()): State {
     },
   ]
 
-  const doseLog: Record<string, DoseEntry> = {}
-  for (let i = 1; i <= 7; i++) {
-    const d = now - i * DAY
-    const dk = dayKey(d)
-    doseLog[`r1@${dk}`] = { action: 'taken', at: timeOn(d, '08:05') }
-    doseLog[`r2@${dk}`] = { action: 'taken', at: timeOn(d, '08:35') }
-    doseLog[`r3@${dk}`] = { action: 'taken', at: timeOn(d, '20:40') }
-  }
-
   return {
     rev: 0,
     clockOffsetMs: 0,
@@ -116,7 +127,7 @@ export function getInitialState(now = Date.now()): State {
       { id: 'r2', patientId: 'p1', brand: 'Glycomet 500', time: '08:30', instructions: 'Morning dose', createdBy: 'Dr Arjun Rao' },
       { id: 'r3', patientId: 'p1', brand: 'Glycomet 500', time: '20:30', instructions: 'Night dose', createdBy: 'Dr Arjun Rao' },
     ],
-    doseLog,
+    doseLog: doseHistory(now),
     flags: [],
     reports: [
       {
@@ -174,8 +185,8 @@ export function getInitialState(now = Date.now()): State {
         pulse: [{ at: now - HOUR, bpm: 72 }, { at: now - 2 * HOUR, bpm: 75 }],
         sleep: [{ at: now - DAY, hours: 7.2 }],
         bp: [
-          { at: now - DAY, sys: 132, dia: 84 },
-          { at: now - 2 * DAY, sys: 136, dia: 86 },
+          ...BP_14.map((v, i) => ({ at: timeOn(now - (14 - i) * DAY, '07:30'), sys: v[0], dia: v[1] })),
+          { at: now - 2 * HOUR, sys: 148, dia: 92 },
         ],
       },
       p2: { pulse: [], sleep: [], bp: [] },
