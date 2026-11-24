@@ -91,29 +91,98 @@ The feature addresses a major friction point in outpatient healthcare: doctors s
 
 ## 4. Verification & Testing Results
 
-### Full Test Suite (Vitest — 41/41 Tests Passing)
+### Full Test Suite (Vitest — 82/82 Tests Passing Across 11 Test Suites)
 ```
-✓ v2/src/engine/rules.test.ts (8 tests)
-✓ v2/src/engine/care.test.ts (7 tests)
-✓ v2/src/lib/csv.test.ts (1 test)
-✓ v2/src/core/actions.test.ts (6 tests)
-✓ v2/src/core/consultation.test.ts (12 tests)
-✓ v2/server/app.test.ts (4 tests)
-✓ v2/src/lib/lib.test.ts (3 tests)
+✓ v2/src/ai/wispr.test.ts (14 tests)
+  - Wispr Flow STT engine initialization with API key, custom endpoint, language config
+  - Contextual medical dictionary injection with 40+ drugs and clinical terms
+  - Wispr Flow model pre-warming ping on consultation start
+  - Wispr Flow streaming WebSocket URL generator with authentication
+  - Conversational filler removal ("um", "uh", "you know")
+  - Vital signs normalization (e.g., "134 over 84" -> "134/84 mmHg")
+  - REST API format transcription with mock response
+  - Multipart fallback compatibility when standard REST endpoint is targeted
+  - Deterministic fallback for air-gapped / offline clinic environments
 
-Test Files:  7 passed (7)
-Tests:       41 passed (41)
-Duration:    ~2.3s
+✓ v2/src/ai/extraction.test.ts (10 tests)
+  - Extraction prompt builder including patient context, medications, and chief complaint
+  - Clinical extraction parsing from LLM JSON response
+  - Fallback to deterministic heuristic when LLM returns invalid JSON or network times out
+  - Heuristic extraction for multiple clinical scenarios:
+    * Headache + hypertension
+    * Dizziness + postural hypotension
+    * Edema + Lasix adjustments
+    * Chest tightness + ECG referral + Telma-AM titration
+    * Fatigue + Glycomet + HbA1c workup
+    * Complex follow-up timing and dietary restriction extraction
+
+✓ v2/src/consultation/consultation-ui.test.tsx (9 tests)
+  - ConsultationCardView rendering with Chief Complaint, Observations, Symptoms, Plan
+  - Audio transcript modal / view toggle and verbatim rendering
+  - RecordingBar rendering in 'recording' state with animated waveforms and live timer
+  - RecordingBar rendering in 'paused' state with paused badge
+  - RecordingBar rendering in 'processing' state during STT transcription
+  - RecordingBar action triggers: pause/resume and complete consultation
+  - RecordingBar dismissal when session is completed
+
+✓ v2/server/persist.test.ts (8 tests)
+  - Memory persistence initial revision and snapshot storage
+  - Optimistic locking and conflict detection on concurrent writes
+  - SQLite persistence initialization with table and index creation
+  - State snapshot loading, updating, and saving to SQLite
+  - Consultation cards persistence across server restarts
+  - Version revision incrementing and atomicity
+
+✓ v2/src/core/consultation.test.ts (12 tests)
+  - Complete consultation action lifecycle (start, pause, resume, chunk, complete)
+  - Idempotent start prevents duplicate active sessions
+  - Cumulative duration tracking across pause/resume cycles
+  - Role-scoped visibility (patients and doctors see sessions; pharmacy/caregivers do not)
+  - Fallback Wispr Flow transcription and LLM extraction
+
+✓ v2/src/engine/rules.test.ts (8 tests)
+  - Prescribing safety rules and contraindication checks
+  - Critical flag evaluation and clinical decision validation
+
+✓ v2/src/engine/care.test.ts (7 tests)
+  - 14-day adherence vs vitals correlation
+  - Caregiver escalation ladder progression
+  - Dose confirmations and strip verification
+
+✓ v2/src/core/actions.test.ts (6 tests)
+  - Doctor prescription drafting and signing
+  - Clinic QR check-in and consent revocation
+  - Pharmacy generic substitution attestation
+
+✓ v2/server/app.test.ts (4 tests)
+  - End-to-end HTTP integration tests for login, QR check-in, chunk upload, pause/resume
+  - Role-scoped view validation over HTTP API
+  - Cryptographic audit trail integrity verification
+  - Wispr Flow status and test endpoints (`/api/wispr/status` and `/api/wispr/test`)
+
+✓ v2/src/lib/lib.test.ts (3 tests)
+  - NMC doctor registry verification mock
+  - Registration number, state council, and name validation
+
+✓ v2/src/lib/csv.test.ts (1 test)
+  - Pharmacy CSV stock inventory parser
+
+Test Files:  11 passed (11)
+Tests:       82 passed (82)
+Duration:    ~2.1s
 ```
 
 ### Production Build
 ```
+> medicub-v2@0.2.0 build
+> tsc --noEmit && vite build
+
 vite v8.3.8 building client environment for production...
 ✓ 126 modules transformed.
 dist/index.html                                   0.41 kB
-dist/assets/index-BWFDJ1Pa.css                   51.13 kB
-dist/assets/index-BuHOGt_f.js                   727.51 kB
-✓ built in 868ms
+dist/assets/index-CPH-gHxf.css                   51.51 kB
+dist/assets/index-BO-pLG_c.js                   728.02 kB
+✓ built in 322ms
 ```
 
 ### Backend Server Health Smoke Test
@@ -139,7 +208,7 @@ npm run v2:server
 # 2. Start the v2 Frontend (runs on port 5174, proxies /api to :8788)
 npm run v2:dev
 
-# 3. Run all 39 Unit & Integration Tests
+# 3. Run all 82 Unit & Integration Tests (11 test suites)
 npm run v2:test
 
 # 4. Compile and verify production build

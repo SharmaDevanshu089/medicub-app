@@ -1,7 +1,28 @@
 # Medicub Progress Report
 
-> **NEW**: Medicub v2 (Wispr Flow Hackathon Edition) is now available in the [`v2/`](./v2/) folder!
-> See [**v2/REPORT.md**](./v2/REPORT.md) for full architectural documentation, clean bloat-free design (no demo mode), and the new **Ambient Consultation Scribe** feature powered by Wispr Flow STT.
+> **NEW**: Medicub v2 (Wispr Flow Hackathon Edition) is fully implemented in the [`v2/`](./v2/) folder!
+> - **Ambient Consultation Scribe**: Clinic QR scan check-in (`CheckIn`), bilateral consent (`ConsentPrompt`), floating dual-device recorder (`RecordingBar`), **Wispr Flow STT** with medical dictionary injection & pre-warming (`wispr.ts`), and clinical extraction (`extraction.ts`).
+> - **Zero Demo Mode Cruft**: All legacy demo mock clocks, presenter backdoors (`/present`, `/show`, `/demo`, `/logs`, `/console`), and seed tampering removed.
+> - **Comprehensive Verification**: **82/82 tests passing** across 11 test suites (`npm run v2:test`).
+> - **Lightning-Fast Production Build**: Builds in ~320ms (`npm run v2:build`).
+> - See [**v2/REPORT.md**](./v2/REPORT.md) for full architectural documentation and API references.
+
+---
+
+### Medicub v2 Quickstart
+```bash
+# Backend server (port 8788 with SQLite persistence)
+npm run v2:server
+
+# Frontend app (port 5174, proxies /api to :8788)
+npm run v2:dev
+
+# Run all 82 unit and integration tests
+npm run v2:test
+
+# Compile production bundle
+npm run v2:build
+```
 
 ---
 
