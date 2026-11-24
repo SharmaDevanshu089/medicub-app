@@ -88,30 +88,19 @@ The feature addresses a major friction point in outpatient healthcare: doctors s
 
 ## 4. Verification & Testing Results
 
-### Unit Tests (Vitest)
+### Full Test Suite (Vitest — 39/39 Tests Passing)
 ```
+✓ v2/src/engine/rules.test.ts (8 tests)
+✓ v2/src/engine/care.test.ts (7 tests)
+✓ v2/src/lib/csv.test.ts (1 test)
 ✓ v2/src/core/actions.test.ts (6 tests)
-  ✓ prescribing safety (2)
-  ✓ consent (1)
-  ✓ pharmacy (2)
-  ✓ clinic QR check-in (1)
-
 ✓ v2/src/core/consultation.test.ts (11 tests)
-  ✓ patient starts a consultation session with a clinic doctor
-  ✓ starting an already active consultation returns existing session
-  ✓ doctor with access can start a consultation, while unauthorized doctor is rejected
-  ✓ can pause, resume, and track cumulative duration
-  ✓ stopping moves session to processing state
-  ✓ completing generates structured ConsultationCard in patient history
-  ✓ patient sees their own consultation cards and sessions
-  ✓ consented doctor sees consultation cards; non-consented doctor does not
-  ✓ pharmacy and caregiver never see consultation cards
-  ✓ transcribeAudio returns fallback medical transcript when offline or with mock audio
-  ✓ extractConsultationContext accurately parses symptoms, timelines, medications, and plain summary
+✓ v2/server/app.test.ts (3 tests)
+✓ v2/src/lib/lib.test.ts (3 tests)
 
-Test Files: 2 passed (2)
-Tests:      17 passed (17)
-Duration:   ~300ms
+Test Files:  7 passed (7)
+Tests:       39 passed (39)
+Duration:    ~2.0s
 ```
 
 ### Production Build
@@ -120,8 +109,8 @@ vite v8.3.8 building client environment for production...
 ✓ 126 modules transformed.
 dist/index.html                                   0.41 kB
 dist/assets/index-BWFDJ1Pa.css                   51.13 kB
-dist/assets/index-BdR5Sxbv.js                   727.51 kB
-✓ built in 609ms
+dist/assets/index-BuHOGt_f.js                   727.51 kB
+✓ built in 868ms
 ```
 
 ### Backend Server Health Smoke Test
@@ -139,16 +128,26 @@ dist/assets/index-BdR5Sxbv.js                   727.51 kB
 
 ## 5. How to Run Medicub v2
 
+From the project root:
 ```bash
 # 1. Start the v2 Backend Server (runs on port 8788 with SQLite)
-npm --prefix v2 run server
+npm run v2:server
 
 # 2. Start the v2 Frontend (runs on port 5174, proxies /api to :8788)
-npm --prefix v2 run dev
+npm run v2:dev
 
-# 3. Run all Unit Tests
-npx vitest run v2/src/core/
+# 3. Run all 39 Unit & Integration Tests
+npm run v2:test
 
 # 4. Compile and verify production build
-npm --prefix v2 run build
+npm run v2:build
+```
+
+Or from inside `v2/`:
+```bash
+cd v2
+npm run server
+npm run dev
+npm test
+npm run build
 ```
