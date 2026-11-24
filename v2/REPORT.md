@@ -223,3 +223,39 @@ npm run dev
 npm test
 npm run build
 ```
+
+---
+
+## 6. GitHub CI/CD & Compilation Architecture
+
+### A. Automated Compilation on GitHub Actions
+1. **Android APK Compilation (`.github/workflows/build-android.yml`)**:
+   - Compiles the Android APK automatically on GitHub (`ubuntu-latest`) using Java 21 Temurin and Gradle 8.13.
+   - Syncs web assets via Capacitor (`npm run build:patient && cap sync android`) and builds `medicub-patient-debug.apk`.
+   - Uploads APK directly as a downloadable GitHub Action Artifact (and attaches to GitHub Releases when tagged).
+
+2. **Windows Desktop Packaging (`.github/workflows/build-windows.yml`)**:
+   - Runs on `windows-latest` to package a portable Windows distribution.
+   - Executes `scripts/package-windows.mjs` to bundle compiled web apps, server files, SQLite database runner, and 1-click batch launchers (`Launch-Medicub-v2-Scribe.bat`, `Launch-Doctor-Console.bat`, `Launch-Patient-App.bat`, `Start-Server-Only.bat`).
+   - Produces and uploads `dist-windows/medicub-windows-x64.zip`.
+
+3. **Continuous Integration Verification (`.github/workflows/checks.yml`)**:
+   - Runs on every push and pull request.
+   - Validates dependencies, typechecks both root and v2, and runs all 82 tests across both test suites.
+
+4. **Container Image on GitHub Container Registry (`.github/workflows/docker.yml`)**:
+   - Uses multi-stage `Dockerfile` to build an OCI-compliant production container image.
+   - Pushes to `ghcr.io/sharmadevanshu089/medicub-server:latest`.
+
+---
+
+## 7. Server Hosting Analysis: GitHub vs Vercel vs Cloud Containers
+
+| Hosting Option | Feasible for Server? | Details & Tradeoffs |
+|---|---|---|
+| **GitHub Pages** | **No** | Static files only (HTML/CSS/JS). Does not run Node.js, Rust, Python, SQLite, or listening TCP/HTTP ports. |
+| **GitHub Actions** | **No** | Ephemeral batch jobs (max 6 hr). No inbound public IP or ports; hosting persistent servers violates GitHub ToS. |
+| **GitHub Container Registry (GHCR)** | **Host image only** | GitHub builds and stores the Docker image (`ghcr.io/...`) for free. The image can then be pulled by container hosts. |
+| **Vercel** (Current) | **Yes (Serverless)** | Ideal for serverless REST routes + Vercel Blob. Limited for long-duration WebSockets or continuous SQLite file locks. |
+| **Cloud Containers (Fly.io, Render, Railway, VPS)** | **Yes (Recommended for 24/7 Server)** | Runs the Docker container compiled on GitHub with persistent disk for SQLite and full WebSocket support (Node or Rust). |
+
