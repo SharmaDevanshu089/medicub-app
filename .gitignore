@@ -11,7 +11,10 @@ dist-windows/
 .env.local
 
 # local server database
-server/data/
+**/server/data/
+*.db
+*.db-shm
+*.db-wal
 
 # Android build outputs (the published APK lives in public/)
 android/.gradle/

@@ -1,11 +1,16 @@
 // Local v2 server: `npm run server`. Env: PORT, MEDICUB_DB, MEDICUB_ADMIN_KEY, MEDICUB_ORIGINS (comma list).
 import { createServer } from 'node:http'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { createApp } from './app'
 import { sqlitePersist } from './persist-sqlite'
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const defaultDb = path.join(__dirname, 'data', 'medicub.db')
+
 const port = Number(process.env.PORT ?? 8788)
 const app = createApp({
-  persist: sqlitePersist(process.env.MEDICUB_DB ?? 'v2/server/data/medicub.db'),
+  persist: sqlitePersist(process.env.MEDICUB_DB ?? defaultDb),
   adminKey: process.env.MEDICUB_ADMIN_KEY ?? 'medicub-v2-admin',
   origins: process.env.MEDICUB_ORIGINS?.split(',').map((s) => s.trim()).filter(Boolean),
 })
