@@ -1,5 +1,13 @@
+import { useEffect, useState } from 'react'
 import { Card, Footer } from '../ui/kit'
 import { I } from '../ui/icons'
+
+interface WisprStatusInfo {
+  configured: boolean
+  llmConfigured?: boolean
+  modeMessage?: string
+  dictionaryCount?: number
+}
 
 const APPS = [
   { href: '/doctor', title: 'Doctor Console', sub: 'Patient 360, safety rules, interactive consultation recording & notes', badge: 'Ambient Scribe' },
@@ -13,6 +21,17 @@ const APPS = [
 ]
 
 export default function Launcher() {
+  const [status, setStatus] = useState<WisprStatusInfo | null>(null)
+
+  useEffect(() => {
+    fetch('/api/wispr/status')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: WisprStatusInfo | null) => {
+        if (d) setStatus(d)
+      })
+      .catch(() => undefined)
+  }, [])
+
   return (
     <div className="mx-auto max-w-4xl p-6 text-[17px]" style={{ fontFamily: 'var(--font-app)' }}>
       <header className="flex flex-col gap-2">
@@ -28,6 +47,24 @@ export default function Launcher() {
           audio recording on mobile or desktop, transcribe with <b>Wispr Flow</b>, and compile
           structured consultation notes into the shared record.
         </p>
+
+        {status && (
+          <div
+            className={`mt-2 flex items-center gap-2.5 rounded-2xl border px-4 py-2.5 text-sm font-semibold ${
+              status.configured
+                ? 'border-sage-200 bg-sage-50 text-sage-900'
+                : 'border-amber-200 bg-amber-50 text-amber-900'
+            }`}
+          >
+            <I n={status.configured ? 'check' : 'alert'} size={18} />
+            <span>
+              {status.modeMessage ??
+                (status.configured
+                  ? `Wispr Flow Voice Interface active (${status.dictionaryCount ?? 40}+ medical terms)`
+                  : 'Wispr Flow / AI API key not set — running in built-in offline clinical fallback mode')}
+            </span>
+          </div>
+        )}
       </header>
 
       <div className="mt-8 grid gap-3 sm:grid-cols-2">

@@ -1,6 +1,8 @@
 // Medicub v2 API: sessions, role-filtered state, validated actions, consultation scribe, hash-chained audit, structured logs.
 import { randomBytes, randomUUID } from 'node:crypto'
+import fs from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import path from 'node:path'
 import { runAction, type AuditEvent } from '../src/core/actions'
 import { AppError, STATUS, invalid } from '../src/core/errors'
 import { actorName, type Session } from '../src/core/session'
@@ -20,16 +22,46 @@ export interface ServerOptions {
   adminKey?: string
   origins?: string[]
   quiet?: boolean
+  /** Optional directory containing built frontend assets (e.g. v2/dist) to serve on non-API GET routes. */
+  staticDir?: string
+}
+
+const MIME_TYPES: Record<string, string> = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.mjs': 'application/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
 }
 
 const DEPARTMENTS = ['Radiology', 'Pathology', 'Cardiology', 'Diabetology', 'Nursing', 'Physiotherapy', 'Nephrology']
 const SPECIALTIES = ['General Medicine', 'Cardiology', 'Diabetology', 'Nephrology', 'Pulmonology', 'Orthopaedics', 'Paediatrics']
 const MAX_BODY = 10_000_000 // 10MB to accommodate audio chunks
-const DEFAULT_ORIGINS = ['http://localhost:5174', 'http://127.0.0.1:5174', 'http://localhost:5173', 'http://localhost:4173', 'capacitor://localhost', 'https://localhost', 'http://localhost']
+const DEFAULT_ORIGINS = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:5174',
+  'http://127.0.0.1:5174',
+  'http://localhost:8788',
+  'http://127.0.0.1:8788',
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'capacitor://localhost',
+  'https://localhost',
+  'http://localhost',
+]
 const FRESH_MS = 1000
 
 export function createApp(opts: ServerOptions) {
   const persist = opts.persist
+  const staticRoot = opts.staticDir ? path.resolve(opts.staticDir) : null
   const log = makeLogger({ quiet: opts.quiet })
   const adminKey = opts.adminKey ?? 'medicub-v2-admin'
   const origins = new Set([...DEFAULT_ORIGINS, ...(opts.origins ?? [])])
@@ -453,8 +485,16 @@ export function createApp(opts: ServerOptions) {
       }
 
       if (req.method === 'GET' && url.pathname === '/api/wispr/status') {
+        const wisprConfigured = wisprSTT.isConfigured()
+        const llmConfigured = consultationExtractor.isConfigured()
+        const modeMessage = wisprConfigured
+          ? `Wispr Flow Voice Interface active (${WISPR_MEDICAL_DICTIONARY.length}+ medical terms)`
+          : 'Wispr Flow / AI API key not set — running in built-in offline clinical fallback mode'
         send(200, {
-          configured: wisprSTT.isConfigured(),
+          configured: wisprConfigured,
+          wisprConfigured,
+          llmConfigured,
+          modeMessage,
           streamingSupported: Boolean(wisprSTT.getStreamingWsUrl()),
           dictionaryCount: WISPR_MEDICAL_DICTIONARY.length,
           dictionary: WISPR_MEDICAL_DICTIONARY.slice(0, 25),
@@ -499,6 +539,43 @@ export function createApp(opts: ServerOptions) {
         log(body.level === 'warn' ? 'warn' : 'error', `client.${String(body.event ?? 'log')}`, body)
         send(204, null)
         return
+      }
+
+      // Serve built web app & static assets on non-API GET/HEAD routes when staticDir is configured
+      if ((req.method === 'GET' || req.method === 'HEAD') && !url.pathname.startsWith('/api/') && staticRoot) {
+        const reqPath = decodeURIComponent(url.pathname)
+        const rel = reqPath === '/' ? 'index.html' : reqPath.replace(/^\/+/, '')
+        const candidate = path.resolve(staticRoot, rel)
+        let targetFile: string | null = null
+
+        if (candidate.startsWith(staticRoot + path.sep) || candidate === staticRoot) {
+          if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+            targetFile = candidate
+          }
+        }
+        if (!targetFile) {
+          const fallback = path.join(staticRoot, 'index.html')
+          if (fs.existsSync(fallback) && fs.statSync(fallback).isFile()) {
+            targetFile = fallback
+          }
+        }
+
+        if (targetFile) {
+          const ext = path.extname(targetFile).toLowerCase()
+          const contentType = MIME_TYPES[ext] ?? 'application/octet-stream'
+          const cacheControl = ext === '.html' ? 'no-cache' : 'public, max-age=31536000, immutable'
+          res.writeHead(200, {
+            'Content-Type': contentType,
+            'Cache-Control': cacheControl,
+            'X-Content-Type-Options': 'nosniff',
+          })
+          if (req.method === 'HEAD') {
+            res.end()
+          } else {
+            fs.createReadStream(targetFile).pipe(res)
+          }
+          return
+        }
       }
 
       send(404, { error: { code: 'NOT_FOUND', message: 'Not found.' } })

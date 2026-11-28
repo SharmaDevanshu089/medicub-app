@@ -7,8 +7,11 @@ dist-windows/
 *.log
 
 # secrets (Vercel env pulled locally: BLOB token, OIDC token)
+.env
 .env*.local
 .env.local
+v2/.env*
+!v2/.env.example
 
 # local server database
 **/server/data/

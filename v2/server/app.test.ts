@@ -1,4 +1,7 @@
 // End-to-end integration tests for v2 HTTP server, auth, and Consultation Scribe API.
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import type { AddressInfo } from 'node:net'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createServer, type Server } from 'node:http'
@@ -150,10 +153,46 @@ describe('v2 Server — Auth & Consultation Scribe End-to-End API', () => {
     expect(statusRes.json.features).toContain('medical_dictionary_context')
     expect(statusRes.json.dictionaryCount).toBeGreaterThan(30)
     expect(statusRes.json.features).toContain('auto_edits')
+    expect(typeof statusRes.json.wisprConfigured).toBe('boolean')
+    expect(typeof statusRes.json.llmConfigured).toBe('boolean')
+    expect(statusRes.json.modeMessage).toBeTruthy()
 
     const testAudioRes = await api('/api/wispr/test', { format: 'webm' })
     expect(testAudioRes.status).toBe(200)
     expect(testAudioRes.json.text).toBeTruthy()
     expect(testAudioRes.json.autoEdited).toBe(true)
+  })
+
+  it('serves static frontend and SPA routes while keeping unknown /api routes 404', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'medicub-static-'))
+    fs.writeFileSync(path.join(tmpDir, 'index.html'), '<!doctype html><html><body>Medicub UI</body></html>')
+    fs.mkdirSync(path.join(tmpDir, 'assets'))
+    fs.writeFileSync(path.join(tmpDir, 'assets', 'app.js'), 'console.log("ok")')
+
+    const staticApp = createApp({ persist: memoryPersist(), quiet: true, staticDir: tmpDir })
+    const staticServer = createServer((req, res) => void staticApp.handler(req, res))
+    await new Promise<void>((resolve) => staticServer.listen(0, '127.0.0.1', () => resolve()))
+    const url = `http://127.0.0.1:${(staticServer.address() as AddressInfo).port}`
+
+    try {
+      const rootRes = await fetch(url + '/')
+      expect(rootRes.status).toBe(200)
+      expect(rootRes.headers.get('content-type')).toContain('text/html')
+      expect(await rootRes.text()).toContain('Medicub UI')
+
+      const spaRes = await fetch(url + '/doctor')
+      expect(spaRes.status).toBe(200)
+      expect(spaRes.headers.get('content-type')).toContain('text/html')
+
+      const assetRes = await fetch(url + '/assets/app.js')
+      expect(assetRes.status).toBe(200)
+      expect(assetRes.headers.get('content-type')).toContain('application/javascript')
+
+      const apiMissing = await fetch(url + '/api/does-not-exist')
+      expect(apiMissing.status).toBe(404)
+    } finally {
+      await new Promise<void>((resolve) => staticServer.close(() => resolve()))
+      fs.rmSync(tmpDir, { recursive: true, force: true })
+    }
   })
 })

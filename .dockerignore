@@ -7,8 +7,11 @@ android
 .git
 .github
 .vercel
+.env
+.env*
+!.env.patient
+v2/.env*
 *.log
-.env*.local
 server/data
 v2/server/data
 medicub-patient-debug.apk

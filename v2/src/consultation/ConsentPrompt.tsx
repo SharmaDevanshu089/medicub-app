@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { I } from '../ui/icons'
 import { Pressable, Sheet } from '../ui/motion'
 
@@ -18,6 +18,16 @@ export function ConsentPrompt({
   onDecline,
 }: ConsentPromptProps) {
   const [loading, setLoading] = useState(false)
+  const [keySet, setKeySet] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    fetch('/api/wispr/status')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { configured?: boolean } | null) => {
+        if (d && typeof d.configured === 'boolean') setKeySet(d.configured)
+      })
+      .catch(() => undefined)
+  }, [])
 
   const handleStart = async () => {
     setLoading(true)
@@ -38,7 +48,7 @@ export function ConsentPrompt({
             </div>
             <div>
               <span className="inline-flex items-center gap-1 rounded-full bg-sage-100 px-2.5 py-0.5 text-xs font-bold text-sage-900">
-                <I n="sparkle" size={14} /> Wispr Flow Scribe
+                <I n="sparkle" size={14} /> Wispr Flow Scribe{keySet === false ? ' (Key not set · Demo Fallback)' : ''}
               </span>
               <h2 className="m-0 text-xl font-extrabold tracking-tight">Record Consultation?</h2>
             </div>

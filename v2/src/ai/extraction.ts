@@ -13,6 +13,11 @@ export class LLMExtractionAdapter implements ExtractionAdapter {
     this.model = opts?.model ?? process.env.AI_MODEL ?? 'gpt-4o-mini'
   }
 
+  /** Checks whether an external LLM extraction API key is configured. */
+  isConfigured(): boolean {
+    return Boolean(this.apiKey && this.apiKey.trim().length > 0)
+  }
+
   async extractConsultation(transcript: string, ctx: ExtractionContext): Promise<ConsultationSummary> {
     if (this.apiKey) {
       try {
