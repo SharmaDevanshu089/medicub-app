@@ -53,38 +53,52 @@ server.listen(port, host, () => {
 
   console.log('')
   console.log('========================================================================')
-  console.log(`  Medicub v2 (Ambient Consultation Scribe) started on ${base}`)
+  console.log(`  MEDICUB v2 — AMBIENT CONSULTATION SCRIBE (Running on ${base})`)
   console.log('========================================================================')
-  console.log('  App Pages:')
-  console.log(`    - Main Launcher      : ${base}/`)
-  console.log(`    - Patient App        : ${base}/patient`)
-  console.log(`    - Doctor Console     : ${base}/doctor`)
-  console.log(`    - Clinic Desk QR     : ${base}/qr`)
-  console.log(`    - Caregiver Portal   : ${base}/caregiver`)
-  console.log(`    - Pharmacy Panel     : ${base}/pharmacy`)
-  console.log(`    - Department Desk    : ${base}/department`)
-  console.log(`    - Doctor Onboarding  : ${base}/onboard`)
-  console.log(`    - Watch Companion    : ${base}/watch`)
-  console.log('  API & Diagnostics:')
-  console.log(`    - Health Check       : ${base}/api/health`)
-  console.log(`    - Wispr Flow Status  : ${base}/api/wispr/status`)
-  console.log('  Runtime Info:')
-  console.log(`    - Database (SQLite)  : ${dbPath}`)
+  console.log('  [IMPORTANT INFO & STATUS]')
+  console.log('    * Scope         : Everything active is built in v2/ (root is legacy only)')
+  console.log('    * Web Showcase  : This Web/Docker build is an interactive showcase preview;')
+  console.log('                      full native Android/Desktop frameworks are under development')
+  console.log(`    * Database      : ${dbPath}`)
   console.log(
     staticDir
-      ? `    - Static Web UI      : Serving built UI from ${staticDir}`
-      : '    - Static Web UI      : WARNING - v2/dist not found (API-only mode; run "npm run v2:build" to serve UI)',
+      ? `    * Static Web UI : Serving built UI from ${staticDir}`
+      : '    * Static Web UI : WARNING - v2/dist not found (run "npm run build" first)',
   )
   console.log(
     wisprOk
-      ? `    - Wispr Flow STT Key : Configured (${WISPR_MEDICAL_DICTIONARY.length} medical terms loaded)`
-      : '    - Wispr Flow STT Key : NOT SET -> Running in built-in offline clinical fallback mode',
+      ? `    * Wispr Flow    : API Key Configured (${WISPR_MEDICAL_DICTIONARY.length} medical terms loaded)`
+      : '    * Wispr Flow    : API Key NOT SET -> Using built-in offline clinical fallback',
   )
   console.log(
     llmOk
-      ? '    - Clinical LLM Key   : Configured'
-      : '    - Clinical LLM Key   : NOT SET -> Running in built-in deterministic extraction fallback mode',
+      ? '    * Clinical LLM  : API Key Configured'
+      : '    * Clinical LLM  : API Key NOT SET -> Using built-in deterministic fallback',
   )
+  console.log('')
+  console.log('  [FIRST-TIME GUIDE: PATIENT & DOCTOR SIDES]')
+  console.log(`    1) Patient Mobile App : ${base}/patient`)
+  console.log('       - Sign in  : Click "Continue as Ramesh Kumar" (+91 98450 00001)')
+  console.log('       - Try flow : Me -> Scan QR (enter code from /qr, hold to share) ->')
+  console.log('                    Tap "Start Audio Scribing" -> Pause/Stop on Recording Bar')
+  console.log('                    -> Check generated Consultation Card in Records -> Visits')
+  console.log('')
+  console.log(`    2) Doctor Console     : ${base}/doctor`)
+  console.log('       - Sign in  : Click "Dr Meera Iyer" (Cardiology) or meera@medicub.in')
+  console.log('       - Try flow : Open /qr on a desk tab -> click arrival toast for Ramesh')
+  console.log('                    -> Co-control live Recording Bar -> View "Consultations"')
+  console.log('                    & "Adherence & vitals" tabs inside Patient 360')
+  console.log('')
+  console.log('  [OTHER PAGES & DIAGNOSTIC URLS]')
+  console.log(`    * Main Launcher       : ${base}/`)
+  console.log(`    * Clinic Desk QR      : ${base}/qr`)
+  console.log(`    * Caregiver Portal    : ${base}/caregiver    (Phone: +91 98450 00002)`)
+  console.log(`    * Pharmacy Panel      : ${base}/pharmacy     (Code: PH-DEMO-01, PIN: 4321)`)
+  console.log(`    * Department Desk     : ${base}/department`)
+  console.log(`    * Doctor Onboarding   : ${base}/onboard`)
+  console.log(`    * Watch Companion     : ${base}/watch`)
+  console.log(`    * API Health Check    : ${base}/api/health`)
+  console.log(`    * Wispr Flow Status   : ${base}/api/wispr/status`)
   console.log('========================================================================')
   console.log('')
 })
