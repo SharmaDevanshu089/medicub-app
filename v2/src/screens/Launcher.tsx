@@ -65,6 +65,14 @@ export default function Launcher() {
             </span>
           </div>
         )}
+
+        <div className="mt-1 rounded-2xl border border-cream-200 bg-cream-100/80 px-4 py-2.5 text-xs leading-relaxed text-muted">
+          <b>Web / Docker Showcase Preview (v2):</b> Everything active in this build lives in{' '}
+          <code className="font-mono font-semibold text-ink">v2/</code>. Because the full native Android,
+          Wear OS, and desktop applications require multi-platform SDK frameworks outside Docker, this web
+          deployment serves as an interactive showcase while unified native packaging remains under active
+          development.
+        </div>
       </header>
 
       <div className="mt-8 grid gap-3 sm:grid-cols-2">

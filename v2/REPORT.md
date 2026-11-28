@@ -1,5 +1,11 @@
 # Medicub v2 — Ambient Consultation Scribe (Wispr Flow Integration)
 
+> [!IMPORTANT]
+> **Active Codebase Scope:** Everything developed for the hackathon lives strictly inside `v2/` (nothing new is developed in root legacy `src/` or `server/`).
+
+> [!NOTE]
+> **Web & Docker Showcase Preview (Under Active Development):** The Dockerized web app (`docker compose up` on port `3000`) is a **showcase preview** demonstrating the complete Ambient Consultation Scribe workflow. Full native Android Capacitor, Wear OS, and cross-platform desktop frameworks require extensive external SDK layers beyond a lightweight container and remain under active development (compiled via GitHub Actions).
+
 ## 1. Executive Summary
 Medicub v2 introduces the **Ambient Consultation Scribe**, designed specifically for clinical environments and the **Wispr Flow Hackathon**.
 
@@ -91,7 +97,7 @@ The feature addresses a major friction point in outpatient healthcare: doctors s
 
 ## 4. Verification & Testing Results
 
-### Full Test Suite (Vitest — 82/82 Tests Passing Across 11 Test Suites)
+### Full Test Suite (Vitest — 83/83 Tests Passing Across 11 Test Suites)
 ```
 ✓ v2/src/ai/wispr.test.ts (14 tests)
   - Wispr Flow STT engine initialization with API key, custom endpoint, language config
@@ -154,7 +160,7 @@ The feature addresses a major friction point in outpatient healthcare: doctors s
   - Clinic QR check-in and consent revocation
   - Pharmacy generic substitution attestation
 
-✓ v2/server/app.test.ts (4 tests)
+✓ v2/server/app.test.ts (5 tests)
   - End-to-end HTTP integration tests for login, QR check-in, chunk upload, pause/resume
   - Role-scoped view validation over HTTP API
   - Cryptographic audit trail integrity verification

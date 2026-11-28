@@ -1,27 +1,30 @@
 # Medicub Progress Report
 
-> **NEW**: Medicub v2 (Wispr Flow Hackathon Edition) is fully implemented in the [`v2/`](./v2/) folder!
+> [!IMPORTANT]
+> **Everything Developed Is Strictly in [`v2/`](./v2/):** All active product engineering, Ambient Consultation Scribe features, Wispr Flow integration, tests, and Docker/CI targets live exclusively inside [`v2/`](./v2/). Nothing new is developed in the root legacy directories (`src/`, `server/`), which remain untouched for historical reference.
+
+> [!NOTE]
+> **Web & Docker Showcase Preview:** The Docker / Web deployment (`docker compose up` on port `3000`) is a **showcase preview** of Medicub v2. Because the complete native mobile and desktop ecosystem (Capacitor Android SDK, Wear OS, native hardware integrations) requires multi-platform build frameworks outside Docker, native packaging is under active development and compiled separately via GitHub Actions.
+
+> **Product Overview**: Medicub v2 (Wispr Flow Hackathon Edition) is fully implemented in [`v2/`](./v2/)!
 > - **Ambient Consultation Scribe**: Clinic QR scan check-in (`CheckIn`), bilateral consent (`ConsentPrompt`), floating dual-device recorder (`RecordingBar`), **Wispr Flow STT** with medical dictionary injection & pre-warming (`wispr.ts`), and clinical extraction (`extraction.ts`).
 > - **Zero Demo Mode Cruft**: All legacy demo mock clocks, presenter backdoors (`/present`, `/show`, `/demo`, `/logs`, `/console`), and seed tampering removed.
-> - **Comprehensive Verification**: **82/82 tests passing** across 11 test suites (`npm run v2:test`).
-> - **Lightning-Fast Production Build**: Builds in ~320ms (`npm run v2:build`).
-> - See [**v2/REPORT.md**](./v2/REPORT.md) for full architectural documentation and API references.
+> - **Comprehensive Verification**: **83/83 tests passing** across 11 test suites (`npm test` / `npm run v2:test`).
+> - **One-Command Docker Showcase**: `docker compose up --build` exposes UI + API on port `3000` with zero `.env` or secret keys required.
+> - See [**README.md**](./README.md) and [**v2/REPORT.md**](./v2/REPORT.md) for full architectural documentation.
 
 ---
 
 ### Medicub v2 Quickstart
 ```bash
-# Backend server (port 8788 with SQLite persistence)
-npm run v2:server
+# One-command Docker Showcase (UI + API on http://localhost:3000)
+docker compose up --build
 
-# Frontend app (port 5174, proxies /api to :8788)
-npm run v2:dev
-
-# Run all 82 unit and integration tests
-npm run v2:test
-
-# Compile production bundle
-npm run v2:build
+# Or run locally without Docker:
+npm run v2:server   # Backend API + Static UI on port 8788
+npm run v2:dev      # Frontend dev server on port 5174
+npm test            # Run all 83 v2 unit & integration tests
+npm run build       # Compile v2 production bundle
 ```
 
 ---
