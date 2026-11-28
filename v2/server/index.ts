@@ -1,30 +1,108 @@
-// Local / Docker v2 server: `npm run server`. Env: PORT, MEDICUB_DB, MEDICUB_ADMIN_KEY, MEDICUB_ORIGINS, MEDICUB_STATIC_DIR.
+// Local / Docker v2 server: `npm run v2:server`. Env: PORT, HOST, MEDICUB_DB, MEDICUB_ADMIN_KEY, MEDICUB_ORIGINS, MEDICUB_STATIC_DIR.
 import fs from 'node:fs'
 import { createServer } from 'node:http'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { consultationExtractor } from '../src/ai/extraction'
+import { WISPR_MEDICAL_DICTIONARY, wisprSTT } from '../src/ai/wispr'
 import { createApp } from './app'
 import { sqlitePersist } from './persist-sqlite'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const defaultDb = path.join(__dirname, 'data', 'medicub.db')
+const dbPath = process.env.MEDICUB_DB ?? path.join(__dirname, 'data', 'medicub.db')
 const defaultStaticDir = path.resolve(__dirname, '..', 'dist')
 const staticDir = process.env.MEDICUB_STATIC_DIR ?? (fs.existsSync(defaultStaticDir) ? defaultStaticDir : undefined)
 
 const port = Number(process.env.PORT ?? 8788)
+const host = process.env.HOST ?? '0.0.0.0'
+
 const app = createApp({
-  persist: sqlitePersist(process.env.MEDICUB_DB ?? defaultDb),
+  persist: sqlitePersist(dbPath),
   adminKey: process.env.MEDICUB_ADMIN_KEY ?? 'medicub-v2-admin',
   origins: process.env.MEDICUB_ORIGINS?.split(',').map((s) => s.trim()).filter(Boolean),
   staticDir,
 })
-const server = createServer((req, res) => void app.handler(req, res))
-server.listen(port, '0.0.0.0', () => app.log('info', 'server.start', { port, pid: process.pid, staticDir: staticDir ?? null }))
 
-process.on('unhandledRejection', (e) => app.log('error', 'process.unhandled_rejection', { message: String(e), stack: (e as Error)?.stack }))
-process.on('uncaughtException', (e) => app.log('error', 'process.uncaught_exception', { message: e.message, stack: e.stack }))
-for (const sig of ['SIGINT', 'SIGTERM'] as const)
+const server = createServer((req, res) => void app.handler(req, res))
+
+server.on('error', (err: NodeJS.ErrnoException) => {
+  console.error(`\n[MEDICUB V2 ERROR] HTTP server failed to bind on ${host}:${port}`)
+  console.error(`  Code   : ${err.code ?? 'UNKNOWN'}`)
+  console.error(`  Message: ${err.message}`)
+  if (err.code === 'EADDRINUSE') {
+    console.error(`  Hint   : Port ${port} is already in use. Stop the other process or set PORT=<free_port>.`)
+  }
+  console.error(err.stack ?? err)
+  process.exit(1)
+})
+
+server.listen(port, host, () => {
+  const base = `http://localhost:${port}`
+  const wisprOk = wisprSTT.isConfigured()
+  const llmOk = consultationExtractor.isConfigured()
+
+  app.log('info', 'server.start', {
+    port,
+    host,
+    pid: process.pid,
+    dbPath,
+    staticDir: staticDir ?? null,
+    wisprConfigured: wisprOk,
+    llmConfigured: llmOk,
+  })
+
+  console.log('')
+  console.log('========================================================================')
+  console.log(`  Medicub v2 (Ambient Consultation Scribe) started on ${base}`)
+  console.log('========================================================================')
+  console.log('  App Pages:')
+  console.log(`    - Main Launcher      : ${base}/`)
+  console.log(`    - Patient App        : ${base}/patient`)
+  console.log(`    - Doctor Console     : ${base}/doctor`)
+  console.log(`    - Clinic Desk QR     : ${base}/qr`)
+  console.log(`    - Caregiver Portal   : ${base}/caregiver`)
+  console.log(`    - Pharmacy Panel     : ${base}/pharmacy`)
+  console.log(`    - Department Desk    : ${base}/department`)
+  console.log(`    - Doctor Onboarding  : ${base}/onboard`)
+  console.log(`    - Watch Companion    : ${base}/watch`)
+  console.log('  API & Diagnostics:')
+  console.log(`    - Health Check       : ${base}/api/health`)
+  console.log(`    - Wispr Flow Status  : ${base}/api/wispr/status`)
+  console.log('  Runtime Info:')
+  console.log(`    - Database (SQLite)  : ${dbPath}`)
+  console.log(
+    staticDir
+      ? `    - Static Web UI      : Serving built UI from ${staticDir}`
+      : '    - Static Web UI      : WARNING - v2/dist not found (API-only mode; run "npm run v2:build" to serve UI)',
+  )
+  console.log(
+    wisprOk
+      ? `    - Wispr Flow STT Key : Configured (${WISPR_MEDICAL_DICTIONARY.length} medical terms loaded)`
+      : '    - Wispr Flow STT Key : NOT SET -> Running in built-in offline clinical fallback mode',
+  )
+  console.log(
+    llmOk
+      ? '    - Clinical LLM Key   : Configured'
+      : '    - Clinical LLM Key   : NOT SET -> Running in built-in deterministic extraction fallback mode',
+  )
+  console.log('========================================================================')
+  console.log('')
+})
+
+process.on('unhandledRejection', (e) => {
+  console.error('[MEDICUB V2 UNHANDLED REJECTION]', e)
+  app.log('error', 'process.unhandled_rejection', { message: String(e), stack: (e as Error)?.stack })
+})
+
+process.on('uncaughtException', (e) => {
+  console.error('[MEDICUB V2 UNCAUGHT EXCEPTION]', e)
+  app.log('error', 'process.uncaught_exception', { message: e.message, stack: e.stack })
+})
+
+for (const sig of ['SIGINT', 'SIGTERM'] as const) {
   process.on(sig, () => {
+    console.log(`\n[MEDICUB V2] Received ${sig}, shutting down cleanly...`)
     app.log('info', 'server.stop', { signal: sig })
     server.close(() => void app.close().then(() => process.exit(0)))
   })
+}

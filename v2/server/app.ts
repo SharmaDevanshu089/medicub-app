@@ -399,9 +399,14 @@ export function createApp(opts: ServerOptions) {
         limit(`act:${token}`, 300)
         const body = await readJson(req).catch(() => ({}))
         if (name === 'consultation.start') {
-          void wisprSTT.warmup().catch(() => false)
+          log('info', 'consultation.warmup', { wisprConfigured: wisprSTT.isConfigured() })
+          void wisprSTT.warmup().catch((err) => {
+            log('warn', 'wispr.warmup_failed', { message: (err as Error)?.message ?? String(err) })
+            return false
+          })
         }
         const value = await apply(name, body, session, token)
+        log('info', 'action.ok', { action: name, role: session.role })
         send(200, { value })
         return
       }
@@ -422,6 +427,7 @@ export function createApp(opts: ServerOptions) {
         }
         entry.chunks.push(chunkBuf)
         entry.lastAt = Date.now()
+        log('info', 'consultation.chunk_received', { sessionId, chunkCount: entry.chunks.length, bytes: chunkBuf.length })
 
         send(200, { received: true, chunkCount: entry.chunks.length })
         return
@@ -439,6 +445,12 @@ export function createApp(opts: ServerOptions) {
         // Gather buffered audio chunks
         const entry = audioBuffers.get(sessionId)
         const combinedAudio = entry && entry.chunks.length ? Buffer.concat(entry.chunks) : Buffer.from([])
+        log('info', 'consultation.processing_start', {
+          sessionId,
+          audioBytes: combinedAudio.length,
+          wisprConfigured: wisprSTT.isConfigured(),
+          llmConfigured: consultationExtractor.isConfigured(),
+        })
 
         // 1. Prepare patient & doctor context for Wispr Flow Voice Interface & LLM extraction
         const patient = s.patients.find((p) => p.id === consultation.patientId)
@@ -472,6 +484,13 @@ export function createApp(opts: ServerOptions) {
           session,
           token,
         )) as { cardId: string }
+
+        log('info', 'consultation.completed', {
+          sessionId,
+          cardId: result.cardId,
+          model: sttResult.model ?? 'unknown',
+          chiefComplaint: summary.chiefComplaint,
+        })
 
         // Clean up audio buffer
         audioBuffers.delete(sessionId)
@@ -578,12 +597,38 @@ export function createApp(opts: ServerOptions) {
         }
       }
 
-      send(404, { error: { code: 'NOT_FOUND', message: 'Not found.' } })
+      if (!staticRoot && !url.pathname.startsWith('/api/')) {
+        log('warn', 'http.static_missing', {
+          method: req.method ?? 'GET',
+          path: url.pathname,
+          message: 'Frontend bundle (v2/dist) not found; run npm run v2:build or set MEDICUB_STATIC_DIR.',
+        })
+      }
+
+      log('warn', 'http.not_found', { method: req.method ?? 'GET', path: url.pathname })
+      send(404, { error: { code: 'NOT_FOUND', message: `Not found: ${req.method ?? 'GET'} ${url.pathname}` } })
     } catch (err) {
-      const e = err instanceof AppError ? err : new AppError('INTERNAL', 'Internal server error.')
+      const e = err instanceof AppError ? err : new AppError('INTERNAL', `Internal server error: ${(err as Error)?.message ?? String(err)}`)
       const status = STATUS[e.code] ?? 500
-      if (status >= 500) log('error', 'server.error', { message: (err as Error).message, stack: (err as Error).stack })
-      send(status, { error: { code: e.code, message: e.message } })
+      if (status >= 500) {
+        log('error', 'server.error', {
+          method: req.method ?? 'GET',
+          path: url.pathname,
+          status,
+          code: e.code,
+          message: (err as Error)?.message ?? String(err),
+          stack: (err as Error)?.stack,
+        })
+      } else {
+        log('warn', 'http.client_error', {
+          method: req.method ?? 'GET',
+          path: url.pathname,
+          status,
+          code: e.code,
+          message: e.message,
+        })
+      }
+      send(status, { error: { code: e.code, message: e.message, method: req.method ?? 'GET', path: url.pathname } })
     }
   }
 

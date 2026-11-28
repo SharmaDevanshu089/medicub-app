@@ -1,18 +1,15 @@
-# Multi-stage production Dockerfile for Medicub v2 (Frontend + Backend API)
-# Stage 1: Build web static assets
+# Multi-stage production Dockerfile strictly for Medicub v2 (Frontend + Backend API)
+# Stage 1: Install v2 dependencies & build v2 web frontend
 FROM node:24-alpine AS builder
-WORKDIR /app
+WORKDIR /app/v2
 
-COPY package.json package-lock.json ./
-COPY v2/package.json v2/package-lock.json ./v2/
+COPY v2/package.json v2/package-lock.json ./
+RUN npm ci
 
-RUN npm ci && cd v2 && npm ci
+COPY v2/ ./
+RUN npm run build
 
-COPY . .
-
-RUN npm run v2:build
-
-# Stage 2: Production full-stack runner (serves built frontend + /api on port 3000)
+# Stage 2: Production v2 server runner (serves built UI + /api on port 3000)
 FROM node:24-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
