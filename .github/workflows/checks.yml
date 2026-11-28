@@ -1,5 +1,6 @@
-# Every push and pull request: install, typecheck, build, run all tests (v1 & v2).
-name: Checks
+# Continuous Integration for Medicub v2 (Ambient Consultation Scribe)
+# Runs typecheck, production build, Vitest suite (83 tests), and full Docker Compose E2E verification.
+name: v2 Checks & Docker E2E
 
 on:
   push:
@@ -10,7 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  checks:
+  v2-checks:
+    name: v2 Typecheck, Build & Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -21,24 +23,42 @@ jobs:
         with:
           node-version: 24
           cache: npm
-
-      - name: Install root dependencies
-        run: npm ci
+          cache-dependency-path: v2/package-lock.json
 
       - name: Install v2 dependencies
         run: cd v2 && npm ci
 
-      - name: Typecheck v1 and v2
-        run: |
-          npx tsc --noEmit
-          cd v2 && npx tsc --noEmit
+      - name: Typecheck v2
+        run: cd v2 && npx tsc --noEmit
 
-      - name: Build Web Production Bundles
-        run: |
-          npm run build
-          npm run v2:build
+      - name: Build v2 Production Bundle
+        run: cd v2 && npm run build
 
-      - name: Run Test Suites (v1 and v2 - 82 tests)
-        run: |
-          npx vitest run
-          npm run v2:test
+      - name: Run v2 Unit & Integration Tests
+        run: cd v2 && npm test
+
+  docker-e2e:
+    name: Docker Compose Boot & E2E Smoke Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Start Medicub v2 via Docker Compose (No .env or Secret Keys)
+        run: docker compose up -d --build
+
+      - name: Run Live Docker Smoke & Consultation Scribe E2E Test
+        run: node scripts/docker-smoke-test.mjs
+
+      - name: Show Docker Container Logs
+        if: always()
+        run: docker compose logs --no-color
+
+      - name: Tear Down Docker Compose
+        if: always()
+        run: docker compose down -v

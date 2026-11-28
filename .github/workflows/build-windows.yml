@@ -1,4 +1,4 @@
-name: Build Windows Application
+name: Build v2 Windows Package
 
 on:
   push:
@@ -6,11 +6,8 @@ on:
       - main
       - v2-scribe
     paths:
-      - 'src/**'
       - 'v2/**'
-      - 'server/**'
-      - 'scripts/**'
-      - 'package.json'
+      - 'scripts/package-windows.mjs'
       - '.github/workflows/build-windows.yml'
   pull_request:
     branches:
@@ -25,7 +22,7 @@ concurrency:
 
 jobs:
   build-windows:
-    name: Package Windows Desktop App
+    name: Package Medicub v2 Windows Desktop Bundle
     runs-on: windows-latest
 
     steps:
@@ -37,22 +34,21 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: v2/package-lock.json
 
-      - name: Install root and v2 dependencies
+      - name: Install v2 dependencies
         shell: pwsh
         run: |
-          npm ci
           cd v2
           npm ci
-          cd ..
 
-      - name: Compile production web applications
+      - name: Compile Medicub v2 Production Build
         shell: pwsh
         run: |
+          cd v2
           npm run build
-          npm run v2:build
 
-      - name: Package Windows Desktop Distribution
+      - name: Package Medicub v2 Windows Distribution
         shell: pwsh
         run: |
           node scripts/package-windows.mjs
@@ -60,14 +56,14 @@ jobs:
       - name: Upload Windows Distribution Zip Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: medicub-windows-x64
-          path: dist-windows/medicub-windows-x64.zip
+          name: medicub-v2-windows-x64
+          path: dist-windows/medicub-v2-windows-x64.zip
           retention-days: 30
 
       - name: Attach Windows Zip to GitHub Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: dist-windows/medicub-windows-x64.zip
+          files: dist-windows/medicub-v2-windows-x64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

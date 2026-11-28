@@ -1,4 +1,4 @@
-name: Build Android Application
+name: Build v2 Android APK
 
 on:
   push:
@@ -6,10 +6,9 @@ on:
       - main
       - v2-scribe
     paths:
-      - 'src/**'
+      - 'v2/**'
       - 'android/**'
       - 'package.json'
-      - 'package-lock.json'
       - 'capacitor.config.json'
       - '.github/workflows/build-android.yml'
   pull_request:
@@ -25,7 +24,7 @@ concurrency:
 
 jobs:
   build-apk:
-    name: Compile Android APK
+    name: Compile Medicub v2 Android APK
     runs-on: ubuntu-latest
 
     steps:
@@ -38,8 +37,10 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install root Capacitor CLI & v2 dependencies
+        run: |
+          npm ci
+          cd v2 && npm ci
 
       - name: Setup Java 21 (Temurin)
         uses: actions/setup-java@v4
@@ -50,7 +51,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Build Patient Web Distribution
+      - name: Build v2 Patient Web Distribution
         run: npm run build:patient
 
       - name: Sync Capacitor Android Project
@@ -66,19 +67,19 @@ jobs:
 
       - name: Copy APK to root naming convention
         run: |
-          cp android/app/build/outputs/apk/debug/app-debug.apk medicub-patient-debug.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk medicub-v2-patient-debug.apk
 
       - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: medicub-patient-debug-apk
-          path: medicub-patient-debug.apk
+          name: medicub-v2-patient-debug-apk
+          path: medicub-v2-patient-debug.apk
           retention-days: 30
 
       - name: Attach APK to GitHub Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: medicub-patient-debug.apk
+          files: medicub-v2-patient-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

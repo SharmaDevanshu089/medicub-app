@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:patient": "vite build --outDir ../dist-patient --mode patient",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "server": "tsx watch server/index.ts",
